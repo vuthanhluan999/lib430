@@ -63,7 +63,7 @@ unsigned long LEDRun(unsigned int duration,unsigned int brightness)
    return(brightness);
    }
 
-unsigned long LEDRun1(unsigned int duration,unsigned int brightness)
+void LEDRun1(unsigned int duration,unsigned int brightness)
    {
       do
       {
@@ -75,11 +75,9 @@ unsigned long LEDRun1(unsigned int duration,unsigned int brightness)
         P1OUT |= 0x80;                  // P1.7 RED
         delay(255-brightness);
       } while(duration--);
-
-   return(brightness);
    }
 
-unsigned long LEDRun2(unsigned int duration,unsigned int brightness)
+void LEDRun2(unsigned int duration,unsigned int brightness)
    {
      do
      {
@@ -91,8 +89,6 @@ unsigned long LEDRun2(unsigned int duration,unsigned int brightness)
         P1OUT &= ~0x40;                 // P1.6 YELLOW
         delay(511-brightness);
       } while(duration--);
-
-   return(brightness);
    }
 
 void main(void)
@@ -109,7 +105,7 @@ void main(void)
    P1OUT &=~ 0xFF;                      // Turn off the LEDs and wait awhile after power-on
    for(; ++lfsr < 100000 ;);            // Also sets the seed of lfsr to 100000d
 
-   for(; LEDRun(1,ctr++) < 255 ;);      // Increase LED brightness fairly rapidly. This gives the effect of a candle lighting.
+   for(;LEDRun(1,ctr++) < 255;);        // Increase LED brightness fairly rapidly. This gives the effect of a candle lighting.
 
 #ifdef Fibonacci
    lfsr=0xACE1u;                        // Set the seed for the fibonacci LFSR
