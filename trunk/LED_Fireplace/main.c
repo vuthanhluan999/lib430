@@ -1,7 +1,7 @@
 /**********************************************************************************************\
 * Filename:    Main.c                                                                          *
 * Description: LED Fireplace                                                                   *
-* The LED flickering is done using a Fibonacci linear feedback shift register to produce       *
+* The LED flickering is done using a Galois linear feedback shift register to produce          *
 * pseudo random numbers. http://en.wikipedia.org/wiki/Linear_feedback_shift_register           *
 * The code is based on the flickering candle from SarahC (sarah@untamed.co.uk)                 *
 *                                                                                              *
