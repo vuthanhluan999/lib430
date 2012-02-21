@@ -40,7 +40,16 @@
 
 #include "msp430f2012.h"
 
-unsigned long LEDRun(unsigned long duration,unsigned char brightness)
+//#define Galois
+#define Fibonacci
+
+void delay(volatile unsigned int counter)
+   {
+     do;
+     while(counter--);
+   }
+
+unsigned long LEDRun(unsigned int duration,unsigned int brightness)
    {
       do
       {
@@ -54,7 +63,7 @@ unsigned long LEDRun(unsigned long duration,unsigned char brightness)
    return(brightness);
    }
 
-unsigned long LEDRun1(unsigned long duration,unsigned char brightness)
+unsigned long LEDRun1(unsigned int duration,unsigned int brightness)
    {
       do
       {
@@ -70,7 +79,7 @@ unsigned long LEDRun1(unsigned long duration,unsigned char brightness)
    return(brightness);
    }
 
-unsigned long LEDRun2(unsigned long duration,unsigned char brightness)
+unsigned long LEDRun2(unsigned int duration,unsigned int brightness)
    {
      do
      {
@@ -86,16 +95,9 @@ unsigned long LEDRun2(unsigned long duration,unsigned char brightness)
    return(brightness);
    }
 
-void delay(volatile unsigned int counter)
-   {
-     do;
-     while(counter--);
-   }
-
 void main(void)
    {
-
-   unsigned long lfsr=0;                // Seed value for pseudo random number
+   unsigned long lfsr=0;  
    unsigned char ctr=0;
 
    WDTCTL = WDTPW + WDTHOLD;            // Stop watchdog timer
@@ -105,19 +107,43 @@ void main(void)
    DCOCTL = CALDCO_1MHZ;
 
    P1OUT &=~ 0xFF;                      // Turn off the LEDs and wait awhile after power-on
-   for(; ++lfsr < 100000 ;);
+   for(; ++lfsr < 100000 ;);            // Also sets the seed of lfsr to 100000d
 
    for(; LEDRun(1,ctr++) < 255 ;);      // Increase LED brightness fairly rapidly. This gives the effect of a candle lighting.
 
-                                        // Loop animation forever
-   for(;;)
+#ifdef Fibonacci
+   lfsr=0xACE1u;                        // Set the seed for the fibonacci LFSR
+#endif
+   
+   for(;;)                              // Loop animation forever
       {
-      lfsr = (lfsr >> 1) ^ (-(lfsr & 1u) & 0xd0000001u); // Taps 32 31 29 1
-      LEDRun1(   (unsigned char)(lfsr >> 20) & 31        // Take the 20th to 24th bit for the duration. Range: 0-31
-            ,(unsigned char)(lfsr >> 24) & 255);         // and 24th to 29th bit for the brightness.    Range: 0-63
+#ifdef Fibonacci
+      unsigned int bit;
 
-      lfsr = (lfsr >> 1) ^ (-(lfsr & 1u) & 0xd0000001u); // Taps 32 31 29 1
-      LEDRun2(   (unsigned char)(lfsr >> 20) & 31        // Take the 20th to 24th bit for the duration. Range: 0-31
-            ,(unsigned char)(lfsr >> 24) & 255);         // and 24th to 29th bit for the brightness.    Range: 0-63
+      /* taps: 16 14 13 11; characteristic polynomial: x^16 + x^14 + x^13 + x^11 + 1 */
+	  bit  = ((lfsr >> 0) ^ (lfsr >> 2) ^ (lfsr >> 3) ^ (lfsr >> 5) ) & 1;
+	  lfsr =  (lfsr >> 1) | (bit << 15);
+
+      LEDRun1((unsigned char)(lfsr >> 3) & 255          // Take the 3rd to 10th bit for the duration.
+             ,(unsigned char)(lfsr >> 7) & 255);        // and 7th to 15th bit for the brightness.
+
+      /* taps: 16 14 13 11; characteristic polynomial: x^16 + x^14 + x^13 + x^11 + 1 */
+	  bit  = ((lfsr >> 0) ^ (lfsr >> 2) ^ (lfsr >> 3) ^ (lfsr >> 5) ) & 1;
+	  lfsr =  (lfsr >> 1) | (bit << 15);
+
+      LEDRun2((unsigned char)(lfsr >> 3) & 255          // Take the 3rd to 10th bit for the duration.
+             ,(unsigned char)(lfsr >> 7) & 255);        // and 7th to 15th bit for the brightness.
+
+      
+#endif
+#ifdef Galois
+      lfsr = (lfsr >> 1) ^ (-(lfsr & 1) & 0xd0000001); // Taps 32 31 29 1
+      LEDRun1((unsigned char)(lfsr >> 4) & 255           // Take bit 4 to 11 for the duration.
+            ,(unsigned char)(lfsr >> 20) & 255);         // and bit 20 to 27 for the brightness.
+
+      lfsr = (lfsr >> 1) ^ (-(lfsr & 1) & 0xd0000001); // Taps 32 31 29 1
+      LEDRun2((unsigned char)(lfsr >> 4) & 255           // Take bit 4 to 11 for the duration.
+            ,(unsigned char)(lfsr >> 20) & 255);         // and bit 20 to 27 for the brightness.
+#endif
       }
     }
