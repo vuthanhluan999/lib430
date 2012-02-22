@@ -1,4 +1,7 @@
+#summary Project Documentation - Start here
 #labels TexasInstruments,MSP430,C
+----  
+
 =MSP430 Code Library=
 
 This Google code location is meant as a library source for Texas Intruments' MSP430 Microcontrollers.
