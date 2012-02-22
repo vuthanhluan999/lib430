@@ -1,4 +1,7 @@
 ==!ToDo List==
+
+There is a long list for modules to be coded. At least I have most of them running in Assembly already. However I think it makes much more sense to make them available in C too. It's easier from a module and reuse perspective.
+
   * *RFM12b* - C - Cost effective RF Transceiver [http://www.hoperf.com/upload/rf/RFM12B.pdf Link1] [http://www.hoperf.com/upload/rf/RF12_code.pdf Link2]
   * *SFR02* - C - Cost effective Ultrasonic Range Finder [http://www.robotshop.com/PDF/devantech-SRF02-specifications.pdf Link1] [http://www.robot-electronics.co.uk/htm/srf02tech.htm Link2]
   * *BTM-220* - C - Cost effective low current Bluetooth Module [http://www.rayson.com/btm220.html Link1] [http://code.google.com/p/lib430/source/browse/docs/BTM220_DataSheet.pdf Link2]
