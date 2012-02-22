@@ -1,0 +1,6 @@
+=Projects=
+
+These Projects are in the svn repository so far.
+
+  * [http://code.google.com/p/lib430/source/browse/trunk/LED_Fireplace LED Fireplace] with MSP430G2230
+  * [http://code.google.com/p/lib430/source/browse/trunk/PC_Starter PC Starter] with MSP430G2230
