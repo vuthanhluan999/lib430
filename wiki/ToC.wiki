@@ -1,4 +1,4 @@
-Table Of Contents
+#summary Table Of Contents
 
   * [MSP430Library]
     * [ToDo]
