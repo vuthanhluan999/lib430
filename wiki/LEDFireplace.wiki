@@ -3,7 +3,8 @@
 = LED Fireplace =
 
   * [http://code.google.com/p/lib430/source/browse/trunk/LED_Fireplace Code]
-  * [https://picasaweb.google.com/GG430Pix/Lagerfeuer# Pictures]
-<br>
-Video:<p>
-<wiki:video url="https://www.youtube.com/watch?v=8dPgUbcvTu4"/>
+  * [http://picasaweb.google.com/GG430Pix/Lagerfeuer# Pictures]
+  * [http://www.youtube.com/watch?v=8dPgUbcvTu4 Video]
+<p>
+
+<wiki:video url="http://www.youtube.com/watch?v=8dPgUbcvTu4"/>
