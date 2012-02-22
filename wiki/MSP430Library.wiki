@@ -9,6 +9,8 @@ It starts out especially with code for devices on the Launchpad and C language.
 I have most of the code for the devices and modules on the ToDo list in Assembly language but I thnik it's much more flexible to make them available in C too.
 Im also working on a booster pack for the Lauchpad containing most of the sensors.
 
+<g:plusone size="medium"></g:plusone>
+
   * [ToDo ToDo List]
   * [PrjDocu Projects]
 
@@ -26,3 +28,5 @@ Im also working on a booster pack for the Lauchpad containing most of the sensor
                                   |                 |
                                    -----------------
 }}}
+
+http://www.nueberk.de/pix/LaunchPad400.png
