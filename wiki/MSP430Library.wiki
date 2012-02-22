@@ -7,7 +7,8 @@ It starts out especially with code for devices on the Launchpad and C language.
 I have most of the code for the devices and modules on the ToDo list in Assembly language but I thnik it's much more flexible to make them available in C too.
 Im also working on a booster pack for the Lauchpad containing most of the sensors.
 
--> ToDo List
+  * [ToDo ToDo List]
+  * [PrjDocu Projects]
 
 {{{
                                       MSP430G2230
