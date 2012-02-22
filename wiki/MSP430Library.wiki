@@ -1,6 +1,5 @@
 #summary Project Documentation - Start here
 #labels TexasInstruments,MSP430,C
-----  
 
 =MSP430 Code Library=
 
