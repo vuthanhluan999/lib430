@@ -5,3 +5,6 @@
     * [PrjDocu]
         * [LEDFireplace]
         * [PCStarter]
+<br>
+<br>   
+http://www.nueberk.de/pix/LaunchPad150.png
