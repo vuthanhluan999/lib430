@@ -105,11 +105,11 @@
         </option>
         <option>
           <name>GStackSize2</name>
-          <state>80</state>
+          <state>50</state>
         </option>
         <option>
           <name>GHeapSize2</name>
-          <state>80</state>
+          <state>0</state>
         </option>
         <option>
           <name>RadioDataModelType</name>
@@ -714,7 +714,7 @@
         </option>
         <option>
           <name>XclFile</name>
-          <state>$TOOLKIT_DIR$\CONFIG\lnk430G2202.xcl</state>
+          <state>$TOOLKIT_DIR$\CONFIG\lnk430F2012.xcl</state>
         </option>
         <option>
           <name>XclFileSlave</name>
@@ -830,11 +830,11 @@
         </option>
         <option>
           <name>AllowExtraOutput</name>
-          <state>0</state>
+          <state>1</state>
         </option>
         <option>
           <name>GenerateExtraOutput</name>
-          <state>0</state>
+          <state>1</state>
         </option>
         <option>
           <name>XExtraOutOverride</name>
@@ -842,12 +842,12 @@
         </option>
         <option>
           <name>ExtraOutputFile</name>
-          <state>LED_Fire.a43</state>
+          <state>LED_Fire.txt</state>
         </option>
         <option>
           <name>ExtraOutputFormat</name>
           <version>11</version>
-          <state>23</state>
+          <state>33</state>
         </option>
         <option>
           <name>ExtraFormatVariant</name>
@@ -1884,6 +1884,9 @@
       <data/>
     </settings>
   </configuration>
+  <file>
+    <name>$PROJ_DIR$\FW.s43</name>
+  </file>
   <file>
     <name>$PROJ_DIR$\main.c</name>
   </file>
