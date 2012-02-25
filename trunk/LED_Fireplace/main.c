@@ -19,7 +19,7 @@
 *                                   -----------------                                          *
 *                                                                                              *
 * Device:   MSP430G2230                                                                        *
-* Version:  1.0.1                                                                              *
+* Version:  1.1.0                                                                              *
 * Compiler: IAR Embedded Workbench IDE V.5.40 (TI: V6.10)                                      *
 *                                                                                              *
 * COPYRIGHT:                                                                                   *
@@ -39,9 +39,6 @@
 \**********************************************************************************************/
 
 #include "msp430f2012.h"
-
-//#define Galois
-#define Fibonacci
 
 void delay(volatile unsigned int counter)
    {
@@ -69,77 +66,62 @@ void LEDRun1(unsigned int duration,unsigned int brightness)
       {
         P1OUT &= ~0x20;                 // P1.5 RED
         P1OUT &= ~0x80;                 // P1.7 RED
-        delay(brightness+127);
+        delay(brightness+255);
 
         P1OUT |= 0x20;                  // P1.5 RED
         P1OUT |= 0x80;                  // P1.7 RED
         delay(255-brightness);
       } while(duration--);
    }
-
 void LEDRun2(unsigned int duration,unsigned int brightness)
    {
      do
      {
-        P1OUT |= 0x04;                  // P1.2 YELLOW
-        P1OUT |= 0x40;                  // P1.6 YELLOW
-        delay(brightness);
-
         P1OUT &= ~0x04;                 // P1.2 YELLOW
         P1OUT &= ~0x40;                 // P1.6 YELLOW
-        delay(511-brightness);
+        delay(brightness+255);
+        
+        P1OUT |= 0x04;                  // P1.2 YELLOW
+        P1OUT |= 0x40;                  // P1.6 YELLOW
+        delay(255-brightness);
       } while(duration--);
    }
 
 void main(void)
    {
-   unsigned long lfsr=0;  
-   unsigned char ctr=0;
+   unsigned int lfsr1=0xACE1u;
+   unsigned int lfsr2=0x1;
+   unsigned long ctr=0u;
 
    WDTCTL = WDTPW + WDTHOLD;            // Stop watchdog timer
    P1DIR |= 0xFF;                       // Set P1.x to output direction
 
-   BCSCTL1 = CALBC1_1MHZ;
-   DCOCTL = CALDCO_1MHZ;
+   BCSCTL1 = CALBC1_8MHZ;
+   DCOCTL = CALDCO_8MHZ;
 
    P1OUT &=~ 0xFF;                      // Turn off the LEDs and wait awhile after power-on
-   for(; ++lfsr < 100000 ;);            // Also sets the seed of lfsr to 100000d
-
-   for(;LEDRun(1,ctr++) < 255;);        // Increase LED brightness fairly rapidly. This gives the effect of a candle lighting.
-
-#ifdef Fibonacci
-   lfsr=0xACE1u;                        // Set the seed for the fibonacci LFSR
-#endif
+   for(; ++ctr < 100000 ;);
+   
+   ctr=0;
+   for(;LEDRun(7,ctr++) < 255;);        // Increase LED brightness fairly rapidly. This gives the effect of a candle lighting.
    
    for(;;)                              // Loop animation forever
       {
-#ifdef Fibonacci
+
       unsigned int bit;
 
       /* taps: 16 14 13 11; characteristic polynomial: x^16 + x^14 + x^13 + x^11 + 1 */
-	  bit  = ((lfsr >> 0) ^ (lfsr >> 2) ^ (lfsr >> 3) ^ (lfsr >> 5) ) & 1;
-	  lfsr =  (lfsr >> 1) | (bit << 15);
+	  bit  = ((lfsr1 >> 0) ^ (lfsr1 >> 2) ^ (lfsr1 >> 3) ^ (lfsr1 >> 5) ) & 1;
+	  lfsr1 =  (lfsr1 >> 1) | (bit << 15);
 
-      LEDRun1((unsigned char)(lfsr >> 3) & 255          // Take the 3rd to 10th bit for the duration.
-             ,(unsigned char)(lfsr >> 7) & 255);        // and 7th to 15th bit for the brightness.
+      LEDRun1((unsigned char)(lfsr1 >> 3) & 255          // Take the 3rd to 10th bit for the duration.
+             ,(unsigned char)(lfsr1 >> 7) & 255);        // and 7th to 15th bit for the brightness.
 
       /* taps: 16 14 13 11; characteristic polynomial: x^16 + x^14 + x^13 + x^11 + 1 */
-	  bit  = ((lfsr >> 0) ^ (lfsr >> 2) ^ (lfsr >> 3) ^ (lfsr >> 5) ) & 1;
-	  lfsr =  (lfsr >> 1) | (bit << 15);
+	  bit  = ((lfsr2 >> 0) ^ (lfsr2 >> 2) ^ (lfsr2 >> 3) ^ (lfsr2 >> 5) ) & 1;
+	  lfsr2 =  (lfsr2 >> 1) | (bit << 15);
 
-      LEDRun2((unsigned char)(lfsr >> 3) & 255          // Take the 3rd to 10th bit for the duration.
-             ,(unsigned char)(lfsr >> 7) & 255);        // and 7th to 15th bit for the brightness.
-
-      
-#endif
-#ifdef Galois
-      lfsr = (lfsr >> 1) ^ (-(lfsr & 1) & 0xd0000001); // Taps 32 31 29 1
-      LEDRun1((unsigned char)(lfsr >> 4) & 255           // Take bit 4 to 11 for the duration.
-            ,(unsigned char)(lfsr >> 20) & 255);         // and bit 20 to 27 for the brightness.
-
-      lfsr = (lfsr >> 1) ^ (-(lfsr & 1) & 0xd0000001); // Taps 32 31 29 1
-      LEDRun2((unsigned char)(lfsr >> 4) & 255           // Take bit 4 to 11 for the duration.
-            ,(unsigned char)(lfsr >> 20) & 255);         // and bit 20 to 27 for the brightness.
-#endif
+      LEDRun2((unsigned char)(lfsr2 >> 3) & 255          // Take the 3rd to 10th bit for the duration.
+             ,(unsigned char)(lfsr2 >> 7) & 255);        // and 7th to 15th bit for the brightness.
       }
     }
