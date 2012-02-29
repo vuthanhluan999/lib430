@@ -29,7 +29,7 @@
 * 32.768kHz Quartz Crystal on XIN/XOUT                                                         *
 *                                                                                              *
 * Device:   MSP430F2012                                                                        *
-* Version:  1.0.0                                                                              *
+* Version:  1.0.1                                                                              *
 * Compiler: IAR Embedded Workbench IDE V.5.40 (TI: V6.08)                                      *
 *                                                                                              *
 * COPYRIGHT:                                                                                   *
@@ -124,7 +124,7 @@ void LEDOff();
 #define ON 1
 #define OFF 0
 
-#define Version 0x0100
+#define Version 0x0101
 #define VersionLocation 0xFFFF-RESET_VECTOR-3
 
 __root static const int x@VersionLocation = Version;
@@ -134,7 +134,7 @@ void main(void)
 /******************************************************************************/
 // Init
 /******************************************************************************/
-  WDTCTL = WDTPW + WDTHOLD;   // watchdog timer off
+  WDTCTL = WDTPW + WDTHOLD;     // watchdog timer off
   configureClocks();
   P1OUT = BIT5 + BIT6;          // mov BIT5&6 P1OUT = pullup
   P1REN = BIT5 + BIT6;          // mov P1REN = pullup/down enable
@@ -152,9 +152,9 @@ void main(void)
   //P2IES = BIT6 + BIT7;        // set high to low transition for P2.6 interrupt
   //P2IE  = BIT6 + BIT7;        // enable P2.6 interrupt
 
-  WDTCTL = WDTPW + WDTTMSEL + WDTCNTCL + WDTSSEL + WDTIS0; // watchdog counter mode, ACLK, /32768
-  IFG1 &= ~WDTIFG;            // Clear WDT interrupt flag
-  IE1 |= WDTIE;               // WDT interrupt enable
+  WDTCTL = WDTPW + WDTTMSEL + WDTCNTCL + WDTSSEL; // watchdog counter mode, ACLK, /32768
+  IFG1 &= ~WDTIFG;              // Clear WDT interrupt flag
+  IE1 |= WDTIE;                 // WDT interrupt enable
 
     day = 1;
     hour = 0;
@@ -189,7 +189,7 @@ void main(void)
      }
      update_view(state);
 
-     // LED On or Off acc. it's state in "view". The viewpointer is going thru from BIT0 to BIT5
+     // LED On or Off acc. it's state in "view". The viewpointer is going from BIT0 to BIT5
      if(view & viewpointer)     // Is the Bit where viewpointer is pointing at set?
      {                          // Yes? Then switch on corresponding LED.
       LEDOn();
@@ -200,12 +200,12 @@ void main(void)
       LEDOff();
       //LED = (LED+1)%LEDs;
      }
-     delays(100);
+     delays(50);
 
      // All LEDs Off
      P1DIR &= (~LED_MASK);
      P1OUT &= (~LED_MASK);
-     delays(25);
+     delays(10);
 
      viewpointer<<=1;
      if (viewpointer==256) viewpointer=1;
@@ -220,7 +220,7 @@ void main(void)
 /******************************************************************************/
 void configureClocks()
 {
-// Set system DCO to 1MHz
+// Set system DCO to 8MHz
 BCSCTL1 = CALBC1_8MHZ;
 DCOCTL = CALDCO_8MHZ;
 // LFXT1 = VLO
