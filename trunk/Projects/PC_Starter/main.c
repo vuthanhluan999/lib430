@@ -1,6 +1,8 @@
 /**********************************************************************************************\
-* Filename:     Main.c                                                                         *
-* Description:  PC Starter for HTESYNCSRV                                                      *
+* Filename:    Main.c                                                                          *
+* Description: PC Starter                                                                      *
+* This has been programmed to start a remote Backup PC automatically at a certain time every   *
+* week. The BIOS wake up wasn't doing a good job. The time and date must be set manually.      *
 * Push S2 to change state and S1 to set. S2 toggles thru the different modes which are         *
 * indicated by the LEDs.                                                                       *
 * LED: 7 6 5 4 3 2 1 0                                                                         *
@@ -25,12 +27,11 @@
 *    |                                                                                         *
 *    _                                                                                         *
 *                                                                                              *
-*                                                                                              *
 * 32.768kHz Quartz Crystal on XIN/XOUT                                                         *
 *                                                                                              *
 * Device:   MSP430F2012                                                                        *
-* Version:  1.0.1                                                                              *
-* Compiler: IAR Embedded Workbench IDE V.5.40 (TI: V6.08)                                      *
+* Version:  1.0.2                                                                              *
+* Compiler: IAR Embedded Workbench IDE V.5.40 (TI: V6.10)                                      *
 *                                                                                              *
 * COPYRIGHT:                                                                                   *
 * Author:   Gerald Gradl                                                                       *
@@ -44,13 +45,11 @@
 * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.    *
 * See the GNU General Public License for more details.                                         *
 *                                                                                              *
-* You should have received a copy of the GNU General Public License	along with this program.   *
+* You should have received a copy of the GNU General Public License along with this program.   *
 * If not, see <http://www.gnu.org/licenses/>.                                                  *
 \**********************************************************************************************/
 
 #include  "msp430x20x2.h"
-
-//#define ZEIT 1000 		// Timer delay timeout count, 1000 msec
 
 // Multiplexed LEDs
 #define LED_MASK 0x0F // 7 LEDs, 4 IO lines, n = 4, number of LEDS = n x (n-1)
@@ -143,15 +142,6 @@ void main(void)
   P1IES = BIT5 + BIT6;          // set high to low transition for P1.5&6 interrupt
   P1IE  = BIT5 + BIT6;          // enable P1.5&6 interrupt
 
-  //P1DIR = BIT0 + BIT6;        // mov BIT1 and BIT6 to P1DIR for output
-  //P1OUT &= ~BIT0 + ~BIT6;
-  //P2SEL &= ~BIT6 + ~BIT7;     // bic SEL of P2.6
-  //P2OUT = BIT6 + BIT7;        // mov BIT6 P2OUT = pullup
-  //P2REN = BIT6 + BIT7;        // mov BIT6 P2REN = pullup/down enable
-  //P2IFG = 0;                  // Clear Interrupt Flags of P2.x
-  //P2IES = BIT6 + BIT7;        // set high to low transition for P2.6 interrupt
-  //P2IE  = BIT6 + BIT7;        // enable P2.6 interrupt
-
   WDTCTL = WDTPW + WDTTMSEL + WDTCNTCL + WDTSSEL; // watchdog counter mode, ACLK, /32768
   IFG1 &= ~WDTIFG;              // Clear WDT interrupt flag
   IE1 |= WDTIE;                 // WDT interrupt enable
@@ -173,9 +163,6 @@ void main(void)
 /******************************************************************************/
   while(1) // endless loop
   {
-    //__bis_SR_register(LPM3_bits+GIE);
-    // P1OUT ^= BIT0;  // xor BIT0
-
      __enable_interrupt();
 
      if (alarm == ALARM_ON)
@@ -183,13 +170,13 @@ void main(void)
       if (day == alarmday && hour == alarmhour && minuteT == 0 && minuteO == 0 && second == 0)
       {
       P1OUT |= BIT7;
-      delays(500000);
+      delays(250000);
       P1OUT &= ~BIT7;
       }
      }
      update_view(state);
 
-     // LED On or Off acc. it's state in "view". The viewpointer is going from BIT0 to BIT5
+     // LED On or Off acc. it's state in "view". The viewpointer is going thru from BIT0 to BIT5
      if(view & viewpointer)     // Is the Bit where viewpointer is pointing at set?
      {                          // Yes? Then switch on corresponding LED.
       LEDOn();
@@ -220,13 +207,13 @@ void main(void)
 /******************************************************************************/
 void configureClocks()
 {
-// Set system DCO to 8MHz
+// Set system DCO to 1MHz
 BCSCTL1 = CALBC1_8MHZ;
 DCOCTL = CALDCO_8MHZ;
 // LFXT1 = VLO
 // BCSCTL3 |= LFXT1S_2;                      // Select VLO as source for ACLK
 BCSCTL3 |= LFXT1S_0;                      // 32kHz Crystal as source for ACLK
-//BCSCTL3 |= XCAP_0;
+//BCSCTL3 |= XCAP_0;                        // Trim 32.768kHz with internal Caps
 //P1DIR |= BIT0;                            // Debug: ACLK @ P1.0
 //P1SEL |= BIT0;                            // Debug: ACLK @ P1.0
 IFG1 &= ~OFIFG;                           // Clear OSCFault flag
@@ -426,7 +413,7 @@ __interrupt void ISR_Port1(void)
         {
         minuteO = 0;
         }
-      // second = 0;
+      second = 0;
       }
       else if (state == SET_ALARM_DAY)
       {
