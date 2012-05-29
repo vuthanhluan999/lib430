@@ -1,0 +1,395 @@
+//**********************************************************************************************
+//* Filename:     SupportFunctions.s43                                                         *
+//* Description:                                                                               *
+//* Device:       MSP430xxxxxxxx                                                               *
+//* Version:      0.0.1                                                                        *
+//* Compiler:     IAR Embedded Workbench IDE V.4.11A (5.12)                                    *
+//* Date:         07/2008                                                                      *
+//* Author:       Gerald Gradl                                                                 *
+//**********************************************************************************************
+
+PUBLIC  Init_Sys
+PUBLIC  REGClear
+PUBLIC  RAMClear
+PUBLIC  WaitS
+PUBLIC  WaitM
+PUBLIC  WaitL
+PUBLIC  WaitRelay
+PUBLIC  WaitVAR
+PUBLIC  WaitDebounce
+PUBLIC  WaitES
+#ifdef LCD
+PUBLIC  LCDClear
+PUBLIC  LCDSetPos
+PUBLIC  LCDSendChar
+PUBLIC  LCDSendString
+PUBLIC  LCDSendChar2Pos
+PUBLIC  LCDCursorOff
+PUBLIC  LCDCursorOn
+PUBLIC  LCDSetContrast
+PUBLIC  LCDSetVarContrast
+PUBLIC  Line1
+PUBLIC  Line2
+PUBLIC  Line3
+PUBLIC  LCDHEXTable
+PUBLIC  LCDSendPage
+
+EXTERN  LCDContrast
+#endif
+
+//**********************************************************************************************
+//* Include Files                                                                              *
+//**********************************************************************************************
+#include "Definitions.h"
+
+//**********************************************************************************************
+//* Support Functions                                                                          *
+//**********************************************************************************************
+            RSEG CODE:CODE
+
+;-----------------------------------------------------------------------------------------------
+Init_Sys                                             ; Initialize System Peripherals
+;-----------------------------------------------------------------------------------------------
+StopWDT     mov   #WDTPW+WDTHOLD,&WDTCTL             ; Stop WDT
+SetupBT                                              ; Set DCO to 1 MHz:
+       //    mov.b &CALBC1_8MHZ,&BCSCTL1              ; Set range
+       //     mov.b &CALDCO_8MHZ,&DCOCTL               ; Set DCO step + modulation
+          //  bis.b #DIVM_3,&BCSCTL2
+
+SetupPorts  // Temp
+           // bis.b #VCC,&P1OUT                        ; P1.0
+            bic.b #VCC,&P1OUT                        ; P1.0
+            bic.b #VSS,&P1OUT                        ; P1.2
+            bis.b #VCC+VSS,&P1DIR
+            bis.b #TSIC,&P1SEL                       ; P1.1
+            // Temp
+#ifdef LCD
+            // LCD
+            bic.b #VSSLCD+RS,&P3OUT
+            bic.b #RST+SE,&P3OUT
+            bic.b #SIMO+SCLK,&P3OUT
+            bis.b #SIMO+SCLK,&P3DIR
+            bis.b #VCCLCD,&P2OUT
+            bis.b #VSSLCD,&P3DIR
+            bis.b #VCCLCD,&P2DIR
+            bis.b #RST+SE+RS,&P3DIR
+            bis.b #RST+SE,&P3OUT
+            // LCD
+#endif            
+            
+TimerA      mov.w #TASSEL_2+TACLR,&TA0CTL
+#ifdef F2012
+            mov.w #CM_3+CAP,&TA0CCTL0
+#endif
+#ifdef F2132
+            mov.w #CM_3+CAP,&TA0CCTL0
+#endif
+
+#ifdef LCD
+SetupUCB    bis.b #UCSWRST,&UCB0CTL1
+            bis.b #UCSSEL_2,&UCB0CTL1
+            mov.b #UCMST+UCSYNC+UCMSB+UCCKPL,&UCB0CTL0
+            mov.b #20h,&UCB0BR0
+            mov.b #3,&UCB0BR1
+        //    clr.b &UCB0BR1
+            bis.b #SIMO+SCLK,&P3DIR
+            bis.b #SIMO+SCLK,&P3SEL
+            bic.b #UCSWRST,&UCB0CTL1
+
+;-----------------------------------------------------------------------------------------------            
+LCDInit:    bic.b #RST,&P3OUT
+            mov   #2d,RTEMP2
+            call  #WaitVAR
+            bis.b #RST,&P3OUT
+            mov   #2d,RTEMP2
+            call  #WaitVAR            
+            
+            bic.b #SE,&P3OUT
+            call  #WaitL
+            mov.b #FunctionSet1,&UCB0TXBUF
+            call  #SendBUF
+            mov.b #BiasSet,&UCB0TXBUF
+            call  #SendBUF
+            mov.b #PowerControl,&UCB0TXBUF
+            call  #SendBUF
+            mov.b #FollowerControl,&UCB0TXBUF
+            call  #SendBUF
+            mov   #8d,RTEMP2
+            call  #WaitVAR
+            mov.b #ContrastSet,&UCB0TXBUF
+            call  #SendBUF
+            mov.b #FunctionSet0,&UCB0TXBUF
+            call  #SendBUF
+            mov.b #DisplayOn,&UCB0TXBUF
+            call  #SendBUF
+            mov.b #ClearDisplay,&UCB0TXBUF
+            call  #SendBUF
+            mov   #12d,RTEMP2
+            call  #WaitVARS
+            mov.b #EntryModeSet,&UCB0TXBUF
+            call  #SendBUF
+            bis.b #SE,&P3OUT
+            mov   #1d,RTEMP2
+            call  #WaitVAR
+#endif            
+            ret
+
+;-----------------------------------------------------------------------------------------------
+REGClear                                             ; Clear All Registers
+;-----------------------------------------------------------------------------------------------
+            clr   R4
+            clr   R5
+            clr   R6
+            clr   R7
+            clr   R8
+            clr   R9
+            clr   R10
+            clr   R11
+            clr   R12
+            clr   R13
+            clr   R14
+            clr   R15
+            ret
+
+;-----------------------------------------------------------------------------------------------
+RAMClear                                             ; RAM clear routine
+;-----------------------------------------------------------------------------------------------
+            mov   #BOR,RTEMP1                        ; Start address of RAM
+            mov   SP,RTEMP2                          ; Use stack pointer position
+            decd  RTEMP2                             ; Safety distance to SP
+RAMClearLP  mov.b #0h,0(RTEMP1)                      ; Start clearing
+            inc   RTEMP1                             ; Increment counter
+            cmp   RTEMP2,RTEMP1                      ; End of RAM?
+            jne   RAMClearLP                         ; No? Keep going
+            clr   RTEMP1                             ; Clear temporary registers
+            clr   RTEMP2
+            ret
+            
+;-----------------------------------------------------------------------------------------------
+WaitES:                                              ; Extra Short wait routine
+;-----------------------------------------------------------------------------------------------
+            mov   #0Fh,RTEMP1
+LoopES      dec   RTEMP1
+            jnz   LoopES
+            ret
+;-----------------------------------------------------------------------------------------------
+WaitVAR:                                             ; Wait Variable Long
+/* HandOver:  x times in RTEMP2                                                               */
+;-----------------------------------------------------------------------------------------------
+LongWait    call  #WaitL
+            dec   RTEMP2
+            jnz   LongWait
+            ret            
+;-----------------------------------------------------------------------------------------------
+WaitVARS:                                            ; Wait Variable Short
+/* HandOver:  x times in RTEMP2                                                               */
+;-----------------------------------------------------------------------------------------------
+LongWaitS   call  #WaitM
+            dec   RTEMP2
+            jnz   LongWaitS
+            ret
+;-----------------------------------------------------------------------------------------------
+WaitLCD:                                             ; Short wait routine
+;-----------------------------------------------------------------------------------------------
+            mov   #0400h,RTEMP1
+LoopLCD     dec   RTEMP1
+            jnz   LoopLCD
+            ret
+
+;-----------------------------------------------------------------------------------------------
+WaitS:                                               ; Short wait routine
+;-----------------------------------------------------------------------------------------------
+            mov   #0FFh,RTEMP1
+LoopS       dec   RTEMP1
+            jnz   LoopS
+            ret
+;-----------------------------------------------------------------------------------------------
+WaitM:                                               ; Long wait routine
+;-----------------------------------------------------------------------------------------------
+            mov   #01FFh,RTEMP1
+LoopM       dec   RTEMP1
+            jnz   LoopM
+            ret
+;-----------------------------------------------------------------------------------------------
+WaitL:                                               ; Long wait routine
+;-----------------------------------------------------------------------------------------------
+            mov   #0FFFFh,RTEMP1
+LoopL       dec   RTEMP1
+            jnz   LoopL
+            ret
+;-----------------------------------------------------------------------------------------------
+WaitRelay                                            ; Long wait routine
+;-----------------------------------------------------------------------------------------------
+            mov   #03FFFh,RTEMP1
+LoopRelay   dec   RTEMP1
+            jnz   LoopRelay
+            ret
+;-----------------------------------------------------------------------------------------------
+WaitDebounce                                         ; Wait routine for button debounce
+;-----------------------------------------------------------------------------------------------
+            mov   #0300h,RTEMP1
+LoopDB      dec   RTEMP1
+            jnz   LoopDB
+            ret
+
+#ifdef LCD
+;-----------------------------------------------------------------------------------------------
+SendBUF:    bit.b #UCBUSY,&UCB0STAT
+            jnz   SendBUF
+            call  #WaitLCD
+            ret
+
+;-----------------------------------------------------------------------------------------------
+LCDSendString: 
+/* HandOver:  LCDBUF = Label of Text Line to display e.g. Line1 (mov   #Line1,LCDBUF)         */
+;-----------------------------------------------------------------------------------------------
+            bic.b #SE,&P3OUT
+            call  #WaitS
+            bis.b #RS,&P3OUT
+            call  #WaitS
+SendStringLoop:
+            mov.b 0(LCDBUF),&UCB0TXBUF
+            call  #SendBUF
+            inc   LCDBUF
+            cmp   #0,0(LCDBUF)
+            jne   SendStringLoop
+            bic.b #RS,&P3OUT
+            bis.b #SE,&P3OUT
+            ret
+            
+;-----------------------------------------------------------------------------------------------            
+LCDClear:   bic.b #SE,&P3OUT
+            mov.b #ClearDisplay,&UCB0TXBUF
+            call  #SendBUF
+            mov   #12d,RTEMP2
+            call  #WaitVARS            
+            bis.b #SE,&P3OUT
+            ret
+
+;-----------------------------------------------------------------------------------------------
+LCDSetPos:  bic.b #SE,&P3OUT
+            bis.b #080h,LCDADD
+            mov.b LCDADD,&UCB0TXBUF
+            call  #SendBUF
+            bic.b #080h,LCDADD
+            bis.b #SE,&P3OUT
+            ret
+
+;-----------------------------------------------------------------------------------------------
+LCDSendChar:
+            bic.b #SE,&P3OUT
+            bis.b #RS,&P3OUT
+            mov.b LCDBUF,&UCB0TXBUF
+            call  #SendBUF
+            bis.b #SE,&P3OUT
+            bic.b #RS,&P3OUT
+            ret
+            
+;-----------------------------------------------------------------------------------------------
+LCDSendChar2Pos:
+/* HandOver:  LCDADD = LCD Position   Row1: 0-15
+                                      Row2: 16-31
+                                      Row3: 32-47
+              LCDBUF = LCD Character                                                          */
+;-----------------------------------------------------------------------------------------------
+            bic.b #SE,&P3OUT
+            bis.b #080h,LCDADD
+            mov.b LCDADD,&UCB0TXBUF
+            call  #SendBUF
+            bic.b #080h,LCDADD
+            bis.b #RS,&P3OUT
+            mov.b LCDBUF,&UCB0TXBUF
+            call  #SendBUF
+            bis.b #SE,&P3OUT
+            bic.b #RS,&P3OUT
+            ret
+            
+;-----------------------------------------------------------------------------------------------
+LCDCursorOff:
+            bic.b #SE,&P3OUT
+            mov.b #8+4h,&UCB0TXBUF
+            call  #SendBUF
+            bis.b #SE,&P3OUT
+            ret
+;-----------------------------------------------------------------------------------------------            
+LCDCursorOn:
+            bic.b #SE,&P3OUT
+            mov.b #8+4+2+1h,&UCB0TXBUF
+            call  #SendBUF
+            bis.b #SE,&P3OUT
+            ret
+;-----------------------------------------------------------------------------------------------            
+LCDSetContrast:
+            bic.b #SE,&P3OUT
+            mov.b #FunctionSet1,&UCB0TXBUF
+            call  #SendBUF
+            mov.b #LCDCTRCNTL+C2+C1+C0,&UCB0TXBUF
+            call  #SendBUF
+            mov.b #FunctionSet0,&UCB0TXBUF
+            call  #SendBUF
+            bis.b #SE,&P3OUT
+            ret
+;-----------------------------------------------------------------------------------------------            
+LCDSetVarContrast:
+            mov.b &LCDContrast,R4
+            and.b #00001111b,R4
+            add.b #070h,R4
+            mov.b &LCDContrast,R5
+            rra   R5
+            rra   R5
+            rra   R5
+            rra   R5     
+            and.b #00000011b,R5
+            add.b #054h,R5
+            bic.b #SE,&P3OUT
+            mov.b #FunctionSet1,&UCB0TXBUF
+            call  #SendBUF
+            mov.b R5,&UCB0TXBUF                           ; PowerControl (055h) = 054h+C5+C4
+            call  #SendBUF
+            mov.b R4,&UCB0TXBUF                           ; #LCDCTRCNTL+C3+C2+C1+C0
+            call  #SendBUF
+       //     mov.b #06Dh,&UCB0TXBUF
+       //     call  #SendBUF
+            mov.b #FunctionSet0,&UCB0TXBUF
+            call  #SendBUF
+            bis.b #SE,&P3OUT
+            ret            
+;-----------------------------------------------------------------------------------------------
+LCDSendPage:
+            call  #LCDSendString
+            incd  LCDSVL
+            call  #LCDSendString
+            incd  LCDSVL
+            call  #LCDSendString
+            call  #LCDCursorOff
+            ret
+            
+EVEN
+;-----------------------------------------------------------------------------------------------
+LCDHEXTable:
+;-----------------------------------------------------------------------------------------------
+            DB    030h      // 0
+            DB    031h      // 1
+            DB    032h      // 2
+            DB    033h      // 3
+            DB    034h      // 4
+            DB    035h      // 5
+            DB    036h      // 6
+            DB    037h      // 7
+            DB    038h      // 8
+            DB    039h      // 9
+            DB    041h      // A
+            DB    042h      // B
+            DB    043h      // C
+            DB    044h      // D
+            DB    045h      // E
+            DB    046h      // F
+EVEN
+Line1       DW    "Gerald Gradl" ;
+Line2       DW    "Temp.:       ßC " ;
+Line3       DW    "TSIC V0.1 " ;
+EVEN
+
+#endif
+
+END
