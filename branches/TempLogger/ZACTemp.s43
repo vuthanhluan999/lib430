@@ -1,0 +1,2364 @@
+
+//**********************************************************************************************
+//* Include Files                                                                              *
+//**********************************************************************************************
+#include "Definitions.h"
+
+//**********************************************************************************************
+//* RAM                                                                                        *
+//**********************************************************************************************
+
+PUBLIC  ZACTemp1
+PUBLIC  ZACTemp2
+PUBLIC  ZACTemp3
+PUBLIC  ZACTemp4
+PUBLIC  ZACTemp5
+
+RSEG  CODE
+;-----------------------------------------------------------------------------------------------
+ZACTemp1
+;-----------------------------------------------------------------------------------------------
+                eint
+                call	#PUSHALL
+                bic.b   #VCC1,&P3OUT
+                bic.b   #VSS,&P1OUT
+                bis.b   #VSS,&P1DIR
+                bis.b   #VCC1,&P3DIR
+                bis.b   #TSIC1,&P1SEL
+TimerA1         mov.w   #TASSEL_2+TACLR,&TA0CTL
+                mov.w   #CM_3+CAP,&TA0CCTL0
+            
+                mov.w   #BOR,R14
+                bis.w   #MC_2,&TA0CTL
+                bis.b   #VCC1,&P3OUT
+                bis.w   #CCIE,&TA0CCTL0
+                
+                bis.b   #LPM0,SR
+                
+                call    #ZACwire
+                call    #ConvertTSIC
+                call	#POPALL
+                reta
+
+;-----------------------------------------------------------------------------------------------
+ZACTemp2
+;-----------------------------------------------------------------------------------------------
+                eint
+                call	#PUSHALL
+                bic.b   #VCC2,&P3OUT
+                bic.b   #VSS,&P1OUT
+                bis.b   #VSS,&P1DIR
+                bis.b   #VCC2,&P3DIR
+                bis.b   #TSIC2,&P1SEL
+TimerA2         mov.w   #TASSEL_2+TACLR,&TA0CTL
+                mov.w   #CM_3+CAP,&TA0CCTL0
+            
+                mov.w   #BOR,R14
+                bis.w   #MC_2,&TA0CTL
+                bis.b   #VCC2,&P3OUT
+                bis.w   #CCIE,&TA0CCTL0
+                
+                bis.b   #LPM0,SR
+                
+                call    #ZACwire
+                call    #ConvertTSIC
+                call	#POPALL
+                reta
+                
+;-----------------------------------------------------------------------------------------------
+ZACTemp3
+;-----------------------------------------------------------------------------------------------
+                eint
+                call	#PUSHALL
+                bic.b   #VCC3,&P3OUT
+                bic.b   #VSS,&P1OUT
+                bis.b   #VSS,&P1DIR
+                bis.b   #VCC3,&P3DIR
+                bis.b   #TSIC3,&P1SEL
+TimerA3         mov.w   #TASSEL_2+TACLR,&TA0CTL
+                mov.w   #CM_3+CAP,&TA0CCTL0
+            
+                mov.w   #BOR,R14
+                bis.w   #MC_2,&TA0CTL
+                bis.b   #VCC3,&P3OUT
+                bis.w   #CCIE,&TA0CCTL0
+                
+                bis.b   #LPM0,SR
+                
+                call    #ZACwire
+                call    #ConvertTSIC
+                call	#POPALL
+                reta
+
+;-----------------------------------------------------------------------------------------------
+ZACTemp4
+;-----------------------------------------------------------------------------------------------
+                eint
+                call	#PUSHALL
+                bic.b   #VCC4,&P3OUT
+                bic.b   #VSS,&P1OUT
+                bis.b   #VSS,&P1DIR
+                bis.b   #VCC4,&P3DIR
+                bis.b   #TSIC4,&P1SEL
+TimerA4         mov.w   #TASSEL_2+TACLR,&TA0CTL
+                mov.w   #CM_3+CAP,&TA0CCTL0
+            
+                mov.w   #BOR,R14
+                bis.w   #MC_2,&TA0CTL
+                bis.b   #VCC4,&P3OUT
+                bis.w   #CCIE,&TA0CCTL0
+                
+                bis.b   #LPM0,SR
+                
+                call    #ZACwire
+                call    #ConvertTSIC
+                call	#POPALL
+                reta
+
+;-----------------------------------------------------------------------------------------------
+ZACTemp5
+;-----------------------------------------------------------------------------------------------
+                eint
+                call	#PUSHALL
+                bic.b   #VCC5,&P3OUT
+                bic.b   #VSS,&P1OUT
+                bis.b   #VSS,&P1DIR
+                bis.b   #VCC5,&P3DIR
+                bis.b   #TSIC5,&P1SEL
+TimerA5         mov.w   #TASSEL_2+TACLR,&TA0CTL
+                mov.w   #CM_3+CAP,&TA0CCTL0
+            
+                mov.w   #BOR,R14
+                bis.w   #MC_2,&TA0CTL
+                bis.b   #VCC5,&P3OUT
+                bis.w   #CCIE,&TA0CCTL0
+                
+                bis.b   #LPM0,SR
+                
+                call    #ZACwire
+                call    #ConvertTSIC
+                call	#POPALL
+                reta
+                
+;-----------------------------------------------------------------------------------------------
+PUSHALL:        pushx.a R4
+                pushx.a R5
+                pushx.a R6
+                pushx.a R7
+                pushx.a R8
+                pushx.a R9
+                pushx.a R10
+                pushx.a R11
+                reta
+;-----------------------------------------------------------------------------------------------
+POPALL:         popx.a  R11
+                popx.a  R10
+                popx.a  R9
+                popx.a  R8
+                popx.a  R7
+                popx.a  R6
+                popx.a  R5
+                popx.a  R4
+                reta
+
+;-----------------------------------------------------------------------------------------------
+ZACwire:
+;-----------------------------------------------------------------------------------------------
+                mov.w   #BOR,R14
+SearchStart:    cmp     #00A00h,0(R14)
+                jhs     LongHold
+                incd    R14
+                cmp.w   #BOR+0160h,R14
+                jne     SearchStart
+SearchEnd:      ret
+
+LongHold:       incd    R14
+                cmp     #00200h,0(R14)
+                jge     SearchStart
+                cmp     #00120h,0(R14)
+                jl      SearchStart
+                incd    R14
+                cmp     #00200h,0(R14)
+                jge     SearchStart
+                cmp     #00120h,0(R14)
+                jl      SearchStart
+StartBit:       clrc
+                clr     R15
+                mov     #016d,R6
+NextBitH:       incd    R14
+                cmp     #00200h,0(R14)
+                jge     SetZeroH
+SetOneH:        setc
+                rlc     R15
+                incd    R14
+                dec     R6
+                cmp     #08d,R6
+                jne     NextBitH
+                jmp     LowByte
+                
+SetZeroH:       clrc
+                rlc     R15
+                incd    R14
+                dec     R6
+                cmp     #08d,R6
+                jne     NextBitH
+                
+LowByte:        incd    R14
+                incd    R14
+                incd    R14
+                incd    R14
+                
+NextBitL:       incd    R14
+                cmp     #00200h,0(R14)
+                jge     SetZeroL
+SetOneL:        setc
+                rlc     R15
+                incd    R14
+                dec     R6
+                cmp     #00d,R6
+                jne     NextBitL
+                jmp     SearchEnd
+                
+SetZeroL:       clrc
+                rlc     R15
+                incd    R14
+                dec     R6
+                cmp     #00d,R6
+                jne     NextBitL
+                
+                jmp     SearchEnd
+
+;-----------------------------------------------------------------------------------------------
+
+
+;-----------------------------------------------------------------------------------------------
+ConvertTSIC:	; Convert TSIC Value (R15) to Deg C (R8) using TempTabelle
+		; Input:  R15, R7
+		; Output: R8
+;-----------------------------------------------------------------------------------------------
+                clr     R7                      ; R7 Used as Pointer
+                cmp     #0800h,R15
+                jhs     TempError
+                cmp     #0200h,R15
+                jlo     NegativeTemp
+                
+PositiveTemp:   mov     #01500h,R12              ; Set Temperature Register to highest value (+150.0)
+CMPRP:          cmp     TempTabelleP(R7),R15     ; Compare Table Value to TSIC
+                jge     EndConvert              ; Jump if Sensor < Table
+                incd    R7                      ; Increment word Pointer
+                cmp     #0BB8h,R7
+                jeq     TempError
+                dadd    #09999h,R12              ; Subtract 1 from Counter
+                jmp     CMPRP
+                
+NegativeTemp:   mov     #08000h,R12              ; Set Temperature Register to lowest value (0.0)
+CMPRN:          cmp     TempTabelleN(R7),R15     ; Compare Table Value to TSIC
+                jge     EndConvert              ; Jump if Sensor < Table
+                incd    R7                      ; Increment word Pointer
+                cmp     #03F0h,R7
+                jeq     TempError
+                dadd    #01h,R12                 ; Add 1 to Counter
+                jmp     CMPRN
+
+TempError       mov     #0EEEEh,R12
+
+EndConvert:     ret                             ; Return from subroutine
+
+;-----------------------------------------------------------------------------------------------
+TempTabelleP
+;-----------------------------------------------------------------------------------------------
+                DW	07FFh	; 150,0
+                DW	07FDh	; 149,9
+                DW	07FCh	; 149,8
+                DW	07FBh	; 149,7
+                DW	07FAh	; 149,6
+                DW	07F9h	; 149,5
+                DW	07F8h	; 149,4
+                DW	07F7h	; 149,3
+                DW	07F6h	; 149,2
+                DW	07F5h	; 149,1
+                DW	07F4h	; 149
+                DW	07F3h	; 148,9
+                DW	07F2h	; 148,8
+                DW	07F1h	; 148,7
+                DW	07F0h	; 148,6
+                DW	07EFh	; 148,5
+                DW	07EEh	; 148,4
+                DW	07EDh	; 148,3
+                DW	07ECh	; 148,2
+                DW	07EBh	; 148,1
+                DW	07EAh	; 148
+                DW	07E9h	; 147,9
+                DW	07E8h	; 147,8
+                DW	07E7h	; 147,7
+                DW	07E6h	; 147,6
+                DW	07E5h	; 147,5
+                DW	07E4h	; 147,4
+                DW	07E3h	; 147,3
+                DW	07E2h	; 147,2
+                DW	07E1h	; 147,1
+                DW	07E0h	; 147
+                DW	07DFh	; 146,9
+                DW	07DEh	; 146,8
+                DW	07DDh	; 146,7
+                DW	07DCh	; 146,6
+                DW	07DBh	; 146,5
+                DW	07DAh	; 146,4
+                DW	07D9h	; 146,3
+                DW	07D8h	; 146,2
+                DW	07D7h	; 146,1
+                DW	07D6h	; 146
+                DW	07D5h	; 145,9
+                DW	07D4h	; 145,8
+                DW	07D2h	; 145,7
+                DW	07D1h	; 145,6
+                DW	07D0h	; 145,5
+                DW	07CFh	; 145,4
+                DW	07CEh	; 145,3
+                DW	07CDh	; 145,2
+                DW	07CCh	; 145,1
+                DW	07CBh	; 145
+                DW	07CAh	; 144,9
+                DW	07C9h	; 144,8
+                DW	07C8h	; 144,7
+                DW	07C7h	; 144,6
+                DW	07C6h	; 144,5
+                DW	07C5h	; 144,4
+                DW	07C4h	; 144,3
+                DW	07C3h	; 144,2
+                DW	07C2h	; 144,1
+                DW	07C1h	; 144
+                DW	07C0h	; 143,9
+                DW	07BFh	; 143,8
+                DW	07BEh	; 143,7
+                DW	07BDh	; 143,6
+                DW	07BCh	; 143,5
+                DW	07BBh	; 143,4
+                DW	07BAh	; 143,3
+                DW	07B9h	; 143,2
+                DW	07B8h	; 143,1
+                DW	07B7h	; 143
+                DW	07B6h	; 142,9
+                DW	07B5h	; 142,8
+                DW	07B4h	; 142,7
+                DW	07B3h	; 142,6
+                DW	07B2h	; 142,5
+                DW	07B1h	; 142,4
+                DW	07B0h	; 142,3
+                DW	07AFh	; 142,2
+                DW	07AEh	; 142,1
+                DW	07ADh	; 142
+                DW	07ACh	; 141,9
+                DW	07ABh	; 141,8
+                DW	07AAh	; 141,7
+                DW	07A9h	; 141,6
+                DW	07A8h	; 141,5
+                DW	07A6h	; 141,4
+                DW	07A5h	; 141,3
+                DW	07A4h	; 141,2
+                DW	07A3h	; 141,1
+                DW	07A2h	; 141
+                DW	07A1h	; 140,9
+                DW	07A0h	; 140,8
+                DW	079Fh	; 140,7
+                DW	079Eh	; 140,6
+                DW	079Dh	; 140,5
+                DW	079Ch	; 140,4
+                DW	079Bh	; 140,3
+                DW	079Ah	; 140,2
+                DW	0799h	; 140,1
+                DW	0798h	; 140
+                DW	0797h	; 139,9
+                DW	0796h	; 139,8
+                DW	0795h	; 139,7
+                DW	0794h	; 139,6
+                DW	0793h	; 139,5
+                DW	0792h	; 139,4
+                DW	0791h	; 139,3
+                DW	0790h	; 139,2
+                DW	078Fh	; 139,1
+                DW	078Eh	; 139
+                DW	078Dh	; 138,9
+                DW	078Ch	; 138,8
+                DW	078Bh	; 138,7
+                DW	078Ah	; 138,6
+                DW	0789h	; 138,5
+                DW	0788h	; 138,4
+                DW	0787h	; 138,3
+                DW	0786h	; 138,2
+                DW	0785h	; 138,1
+                DW	0784h	; 138
+                DW	0783h	; 137,9
+                DW	0782h	; 137,8
+                DW	0781h	; 137,7
+                DW	0780h	; 137,6
+                DW	077Fh	; 137,5
+                DW	077Eh	; 137,4
+                DW	077Dh	; 137,3
+                DW	077Bh	; 137,2
+                DW	077Ah	; 137,1
+                DW	0779h	; 137
+                DW	0778h	; 136,9
+                DW	0777h	; 136,8
+                DW	0776h	; 136,7
+                DW	0775h	; 136,6
+                DW	0774h	; 136,5
+                DW	0773h	; 136,4
+                DW	0772h	; 136,3
+                DW	0771h	; 136,2
+                DW	0770h	; 136,1
+                DW	076Fh	; 136
+                DW	076Eh	; 135,9
+                DW	076Dh	; 135,8
+                DW	076Ch	; 135,7
+                DW	076Bh	; 135,6
+                DW	076Ah	; 135,5
+                DW	0769h	; 135,4
+                DW	0768h	; 135,3
+                DW	0767h	; 135,2
+                DW	0766h	; 135,1
+                DW	0765h	; 135
+                DW	0764h	; 134,9
+                DW	0763h	; 134,8
+                DW	0762h	; 134,7
+                DW	0761h	; 134,6
+                DW	0760h	; 134,5
+                DW	075Fh	; 134,4
+                DW	075Eh	; 134,3
+                DW	075Dh	; 134,2
+                DW	075Ch	; 134,1
+                DW	075Bh	; 134
+                DW	075Ah	; 133,9
+                DW	0759h	; 133,8
+                DW	0758h	; 133,7
+                DW	0757h	; 133,6
+                DW	0756h	; 133,5
+                DW	0755h	; 133,4
+                DW	0754h	; 133,3
+                DW	0753h	; 133,2
+                DW	0752h	; 133,1
+                DW	0751h	; 133
+                DW	074Fh	; 132,9
+                DW	074Eh	; 132,8
+                DW	074Dh	; 132,7
+                DW	074Ch	; 132,6
+                DW	074Bh	; 132,5
+                DW	074Ah	; 132,4
+                DW	0749h	; 132,3
+                DW	0748h	; 132,2
+                DW	0747h	; 132,1
+                DW	0746h	; 132
+                DW	0745h	; 131,9
+                DW	0744h	; 131,8
+                DW	0743h	; 131,7
+                DW	0742h	; 131,6
+                DW	0741h	; 131,5
+                DW	0740h	; 131,4
+                DW	073Fh	; 131,3
+                DW	073Eh	; 131,2
+                DW	073Dh	; 131,1
+                DW	073Ch	; 131
+                DW	073Bh	; 130,9
+                DW	073Ah	; 130,8
+                DW	0739h	; 130,7
+                DW	0738h	; 130,6
+                DW	0737h	; 130,5
+                DW	0736h	; 130,4
+                DW	0735h	; 130,3
+                DW	0734h	; 130,2
+                DW	0733h	; 130,1
+                DW	0732h	; 130
+                DW	0731h	; 129,9
+                DW	0730h	; 129,8
+                DW	072Fh	; 129,7
+                DW	072Eh	; 129,6
+                DW	072Dh	; 129,5
+                DW	072Ch	; 129,4
+                DW	072Bh	; 129,3
+                DW	072Ah	; 129,2
+                DW	0729h	; 129,1
+                DW	0728h	; 129
+                DW	0727h	; 128,9
+                DW	0726h	; 128,8
+                DW	0724h	; 128,7
+                DW	0723h	; 128,6
+                DW	0722h	; 128,5
+                DW	0721h	; 128,4
+                DW	0720h	; 128,3
+                DW	071Fh	; 128,2
+                DW	071Eh	; 128,1
+                DW	071Dh	; 128
+                DW	071Ch	; 127,9
+                DW	071Bh	; 127,8
+                DW	071Ah	; 127,7
+                DW	0719h	; 127,6
+                DW	0718h	; 127,5
+                DW	0717h	; 127,4
+                DW	0716h	; 127,3
+                DW	0715h	; 127,2
+                DW	0714h	; 127,1
+                DW	0713h	; 127
+                DW	0712h	; 126,9
+                DW	0711h	; 126,8
+                DW	0710h	; 126,7
+                DW	070Fh	; 126,6
+                DW	070Eh	; 126,5
+                DW	070Dh	; 126,4
+                DW	070Ch	; 126,3
+                DW	070Bh	; 126,2
+                DW	070Ah	; 126,1
+                DW	0709h	; 126
+                DW	0708h	; 125,9
+                DW	0707h	; 125,8
+                DW	0706h	; 125,7
+                DW	0705h	; 125,6
+                DW	0704h	; 125,5
+                DW	0703h	; 125,4
+                DW	0702h	; 125,3
+                DW	0701h	; 125,2
+                DW	0700h	; 125,1
+                DW	06FFh	; 125
+                DW	06FEh	; 124,9
+                DW	06FDh	; 124,8
+                DW	06FCh	; 124,7
+                DW	06FBh	; 124,6
+                DW	06FAh	; 124,5
+                DW	06F8h	; 124,4
+                DW	06F7h	; 124,3
+                DW	06F6h	; 124,2
+                DW	06F5h	; 124,1
+                DW	06F4h	; 124
+                DW	06F3h	; 123,9
+                DW	06F2h	; 123,8
+                DW	06F1h	; 123,7
+                DW	06F0h	; 123,6
+                DW	06EFh	; 123,5
+                DW	06EEh	; 123,4
+                DW	06EDh	; 123,3
+                DW	06ECh	; 123,2
+                DW	06EBh	; 123,1
+                DW	06EAh	; 123
+                DW	06E9h	; 122,9
+                DW	06E8h	; 122,8
+                DW	06E7h	; 122,7
+                DW	06E6h	; 122,6
+                DW	06E5h	; 122,5
+                DW	06E4h	; 122,4
+                DW	06E3h	; 122,3
+                DW	06E2h	; 122,2
+                DW	06E1h	; 122,1
+                DW	06E0h	; 122
+                DW	06DFh	; 121,9
+                DW	06DEh	; 121,8
+                DW	06DDh	; 121,7
+                DW	06DCh	; 121,6
+                DW	06DBh	; 121,5
+                DW	06DAh	; 121,4
+                DW	06D9h	; 121,3
+                DW	06D8h	; 121,2
+                DW	06D7h	; 121,1
+                DW	06D6h	; 121
+                DW	06D5h	; 120,9
+                DW	06D4h	; 120,8
+                DW	06D3h	; 120,7
+                DW	06D2h	; 120,6
+                DW	06D1h	; 120,5
+                DW	06D0h	; 120,4
+                DW	06CFh	; 120,3
+                DW	06CDh	; 120,2
+                DW	06CCh	; 120,1
+                DW	06CBh	; 120
+                DW	06CAh	; 119,9
+                DW	06C9h	; 119,8
+                DW	06C8h	; 119,7
+                DW	06C7h	; 119,6
+                DW	06C6h	; 119,5
+                DW	06C5h	; 119,4
+                DW	06C4h	; 119,3
+                DW	06C3h	; 119,2
+                DW	06C2h	; 119,1
+                DW	06C1h	; 119
+                DW	06C0h	; 118,9
+                DW	06BFh	; 118,8
+                DW	06BEh	; 118,7
+                DW	06BDh	; 118,6
+                DW	06BCh	; 118,5
+                DW	06BBh	; 118,4
+                DW	06BAh	; 118,3
+                DW	06B9h	; 118,2
+                DW	06B8h	; 118,1
+                DW	06B7h	; 118
+                DW	06B6h	; 117,9
+                DW	06B5h	; 117,8
+                DW	06B4h	; 117,7
+                DW	06B3h	; 117,6
+                DW	06B2h	; 117,5
+                DW	06B1h	; 117,4
+                DW	06B0h	; 117,3
+                DW	06AFh	; 117,2
+                DW	06AEh	; 117,1
+                DW	06ADh	; 117
+                DW	06ACh	; 116,9
+                DW	06ABh	; 116,8
+                DW	06AAh	; 116,7
+                DW	06A9h	; 116,6
+                DW	06A8h	; 116,5
+                DW	06A7h	; 116,4
+                DW	06A6h	; 116,3
+                DW	06A5h	; 116,2
+                DW	06A4h	; 116,1
+                DW	06A3h	; 116
+                DW	06A1h	; 115,9
+                DW	06A0h	; 115,8
+                DW	069Fh	; 115,7
+                DW	069Eh	; 115,6
+                DW	069Dh	; 115,5
+                DW	069Ch	; 115,4
+                DW	069Bh	; 115,3
+                DW	069Ah	; 115,2
+                DW	0699h	; 115,1
+                DW	0698h	; 115
+                DW	0697h	; 114,9
+                DW	0696h	; 114,8
+                DW	0695h	; 114,7
+                DW	0694h	; 114,6
+                DW	0693h	; 114,5
+                DW	0692h	; 114,4
+                DW	0691h	; 114,3
+                DW	0690h	; 114,2
+                DW	068Fh	; 114,1
+                DW	068Eh	; 114
+                DW	068Dh	; 113,9
+                DW	068Ch	; 113,8
+                DW	068Bh	; 113,7
+                DW	068Ah	; 113,6
+                DW	0689h	; 113,5
+                DW	0688h	; 113,4
+                DW	0687h	; 113,3
+                DW	0686h	; 113,2
+                DW	0685h	; 113,1
+                DW	0684h	; 113
+                DW	0683h	; 112,9
+                DW	0682h	; 112,8
+                DW	0681h	; 112,7
+                DW	0680h	; 112,6
+                DW	067Fh	; 112,5
+                DW	067Eh	; 112,4
+                DW	067Dh	; 112,3
+                DW	067Ch	; 112,2
+                DW	067Bh	; 112,1
+                DW	067Ah	; 112
+                DW	0679h	; 111,9
+                DW	0678h	; 111,8
+                DW	0676h	; 111,7
+                DW	0675h	; 111,6
+                DW	0674h	; 111,5
+                DW	0673h	; 111,4
+                DW	0672h	; 111,3
+                DW	0671h	; 111,2
+                DW	0670h	; 111,1
+                DW	066Fh	; 111
+                DW	066Eh	; 110,9
+                DW	066Dh	; 110,8
+                DW	066Ch	; 110,7
+                DW	066Bh	; 110,6
+                DW	066Ah	; 110,5
+                DW	0669h	; 110,4
+                DW	0668h	; 110,3
+                DW	0667h	; 110,2
+                DW	0666h	; 110,1
+                DW	0665h	; 110
+                DW	0664h	; 109,9
+                DW	0663h	; 109,8
+                DW	0662h	; 109,7
+                DW	0661h	; 109,6
+                DW	0660h	; 109,5
+                DW	065Fh	; 109,4
+                DW	065Eh	; 109,3
+                DW	065Dh	; 109,2
+                DW	065Ch	; 109,1
+                DW	065Bh	; 109
+                DW	065Ah	; 108,9
+                DW	0659h	; 108,8
+                DW	0658h	; 108,7
+                DW	0657h	; 108,6
+                DW	0656h	; 108,5
+                DW	0655h	; 108,4
+                DW	0654h	; 108,3
+                DW	0653h	; 108,2
+                DW	0652h	; 108,1
+                DW	0651h	; 108
+                DW	0650h	; 107,9
+                DW	064Fh	; 107,8
+                DW	064Eh	; 107,7
+                DW	064Dh	; 107,6
+                DW	064Ch	; 107,5
+                DW	064Ah	; 107,4
+                DW	0649h	; 107,3
+                DW	0648h	; 107,2
+                DW	0647h	; 107,1
+                DW	0646h	; 107
+                DW	0645h	; 106,9
+                DW	0644h	; 106,8
+                DW	0643h	; 106,7
+                DW	0642h	; 106,6
+                DW	0641h	; 106,5
+                DW	0640h	; 106,4
+                DW	063Fh	; 106,3
+                DW	063Eh	; 106,2
+                DW	063Dh	; 106,1
+                DW	063Ch	; 106
+                DW	063Bh	; 105,9
+                DW	063Ah	; 105,8
+                DW	0639h	; 105,7
+                DW	0638h	; 105,6
+                DW	0637h	; 105,5
+                DW	0636h	; 105,4
+                DW	0635h	; 105,3
+                DW	0634h	; 105,2
+                DW	0633h	; 105,1
+                DW	0632h	; 105
+                DW	0631h	; 104,9
+                DW	0630h	; 104,8
+                DW	062Fh	; 104,7
+                DW	062Eh	; 104,6
+                DW	062Dh	; 104,5
+                DW	062Ch	; 104,4
+                DW	062Bh	; 104,3
+                DW	062Ah	; 104,2
+                DW	0629h	; 104,1
+                DW	0628h	; 104
+                DW	0627h	; 103,9
+                DW	0626h	; 103,8
+                DW	0625h	; 103,7
+                DW	0624h	; 103,6
+                DW	0623h	; 103,5
+                DW	0622h	; 103,4
+                DW	0621h	; 103,3
+                DW	0620h	; 103,2
+                DW	061Eh	; 103,1
+                DW	061Dh	; 103
+                DW	061Ch	; 102,9
+                DW	061Bh	; 102,8
+                DW	061Ah	; 102,7
+                DW	0619h	; 102,6
+                DW	0618h	; 102,5
+                DW	0617h	; 102,4
+                DW	0616h	; 102,3
+                DW	0615h	; 102,2
+                DW	0614h	; 102,1
+                DW	0613h	; 102
+                DW	0612h	; 101,9
+                DW	0611h	; 101,8
+                DW	0610h	; 101,7
+                DW	060Fh	; 101,6
+                DW	060Eh	; 101,5
+                DW	060Dh	; 101,4
+                DW	060Ch	; 101,3
+                DW	060Bh	; 101,2
+                DW	060Ah	; 101,1
+                DW	0609h	; 101
+                DW	0608h	; 100,9
+                DW	0607h	; 100,8
+                DW	0606h	; 100,7
+                DW	0605h	; 100,6
+                DW	0604h	; 100,5
+                DW	0603h	; 100,4
+                DW	0602h	; 100,3
+                DW	0601h	; 100,2
+                DW	0600h	; 100,1
+                DW	05FFh	; 100
+                DW	05FEh	; 99,9
+                DW	05FDh	; 99,8
+                DW	05FCh	; 99,7
+                DW	05FBh	; 99,6
+                DW	05FAh	; 99,5
+                DW	05F9h	; 99,4
+                DW	05F8h	; 99,3
+                DW	05F7h	; 99,2
+                DW	05F6h	; 99,1
+                DW	05F5h	; 99
+                DW	05F3h	; 98,9
+                DW	05F2h	; 98,8
+                DW	05F1h	; 98,7
+                DW	05F0h	; 98,6
+                DW	05EFh	; 98,5
+                DW	05EEh	; 98,4
+                DW	05EDh	; 98,3
+                DW	05ECh	; 98,2
+                DW	05EBh	; 98,1
+                DW	05EAh	; 98
+                DW	05E9h	; 97,9
+                DW	05E8h	; 97,8
+                DW	05E7h	; 97,7
+                DW	05E6h	; 97,6
+                DW	05E5h	; 97,5
+                DW	05E4h	; 97,4
+                DW	05E3h	; 97,3
+                DW	05E2h	; 97,2
+                DW	05E1h	; 97,1
+                DW	05E0h	; 97
+                DW	05DFh	; 96,9
+                DW	05DEh	; 96,8
+                DW	05DDh	; 96,7
+                DW	05DCh	; 96,6
+                DW	05DBh	; 96,5
+                DW	05DAh	; 96,4
+                DW	05D9h	; 96,3
+                DW	05D8h	; 96,2
+                DW	05D7h	; 96,1
+                DW	05D6h	; 96
+                DW	05D5h	; 95,9
+                DW	05D4h	; 95,8
+                DW	05D3h	; 95,7
+                DW	05D2h	; 95,6
+                DW	05D1h	; 95,5
+                DW	05D0h	; 95,4
+                DW	05CFh	; 95,3
+                DW	05CEh	; 95,2
+                DW	05CDh	; 95,1
+                DW	05CCh	; 95
+                DW	05CBh	; 94,9
+                DW	05CAh	; 94,8
+                DW	05C9h	; 94,7
+                DW	05C7h	; 94,6
+                DW	05C6h	; 94,5
+                DW	05C5h	; 94,4
+                DW	05C4h	; 94,3
+                DW	05C3h	; 94,2
+                DW	05C2h	; 94,1
+                DW	05C1h	; 94
+                DW	05C0h	; 93,9
+                DW	05BFh	; 93,8
+                DW	05BEh	; 93,7
+                DW	05BDh	; 93,6
+                DW	05BCh	; 93,5
+                DW	05BBh	; 93,4
+                DW	05BAh	; 93,3
+                DW	05B9h	; 93,2
+                DW	05B8h	; 93,1
+                DW	05B7h	; 93
+                DW	05B6h	; 92,9
+                DW	05B5h	; 92,8
+                DW	05B4h	; 92,7
+                DW	05B3h	; 92,6
+                DW	05B2h	; 92,5
+                DW	05B1h	; 92,4
+                DW	05B0h	; 92,3
+                DW	05AFh	; 92,2
+                DW	05AEh	; 92,1
+                DW	05ADh	; 92
+                DW	05ACh	; 91,9
+                DW	05ABh	; 91,8
+                DW	05AAh	; 91,7
+                DW	05A9h	; 91,6
+                DW	05A8h	; 91,5
+                DW	05A7h	; 91,4
+                DW	05A6h	; 91,3
+                DW	05A5h	; 91,2
+                DW	05A4h	; 91,1
+                DW	05A3h	; 91
+                DW	05A2h	; 90,9
+                DW	05A1h	; 90,8
+                DW	05A0h	; 90,7
+                DW	059Fh	; 90,6
+                DW	059Eh	; 90,5
+                DW	059Ch	; 90,4
+                DW	059Bh	; 90,3
+                DW	059Ah	; 90,2
+                DW	0599h	; 90,1
+                DW	0598h	; 90
+                DW	0597h	; 89,9
+                DW	0596h	; 89,8
+                DW	0595h	; 89,7
+                DW	0594h	; 89,6
+                DW	0593h	; 89,5
+                DW	0592h	; 89,4
+                DW	0591h	; 89,3
+                DW	0590h	; 89,2
+                DW	058Fh	; 89,1
+                DW	058Eh	; 89
+                DW	058Dh	; 88,9
+                DW	058Ch	; 88,8
+                DW	058Bh	; 88,7
+                DW	058Ah	; 88,6
+                DW	0589h	; 88,5
+                DW	0588h	; 88,4
+                DW	0587h	; 88,3
+                DW	0586h	; 88,2
+                DW	0585h	; 88,1
+                DW	0584h	; 88
+                DW	0583h	; 87,9
+                DW	0582h	; 87,8
+                DW	0581h	; 87,7
+                DW	0580h	; 87,6
+                DW	057Fh	; 87,5
+                DW	057Eh	; 87,4
+                DW	057Dh	; 87,3
+                DW	057Ch	; 87,2
+                DW	057Bh	; 87,1
+                DW	057Ah	; 87
+                DW	0579h	; 86,9
+                DW	0578h	; 86,8
+                DW	0577h	; 86,7
+                DW	0576h	; 86,6
+                DW	0575h	; 86,5
+                DW	0574h	; 86,4
+                DW	0573h	; 86,3
+                DW	0572h	; 86,2
+                DW	0570h	; 86,1
+                DW	056Fh	; 86
+                DW	056Eh	; 85,9
+                DW	056Dh	; 85,8
+                DW	056Ch	; 85,7
+                DW	056Bh	; 85,6
+                DW	056Ah	; 85,5
+                DW	0569h	; 85,4
+                DW	0568h	; 85,3
+                DW	0567h	; 85,2
+                DW	0566h	; 85,1
+                DW	0565h	; 85
+                DW	0564h	; 84,9
+                DW	0563h	; 84,8
+                DW	0562h	; 84,7
+                DW	0561h	; 84,6
+                DW	0560h	; 84,5
+                DW	055Fh	; 84,4
+                DW	055Eh	; 84,3
+                DW	055Dh	; 84,2
+                DW	055Ch	; 84,1
+                DW	055Bh	; 84
+                DW	055Ah	; 83,9
+                DW	0559h	; 83,8
+                DW	0558h	; 83,7
+                DW	0557h	; 83,6
+                DW	0556h	; 83,5
+                DW	0555h	; 83,4
+                DW	0554h	; 83,3
+                DW	0553h	; 83,2
+                DW	0552h	; 83,1
+                DW	0551h	; 83
+                DW	0550h	; 82,9
+                DW	054Fh	; 82,8
+                DW	054Eh	; 82,7
+                DW	054Dh	; 82,6
+                DW	054Ch	; 82,5
+                DW	054Bh	; 82,4
+                DW	054Ah	; 82,3
+                DW	0549h	; 82,2
+                DW	0548h	; 82,1
+                DW	0547h	; 82
+                DW	0545h	; 81,9
+                DW	0544h	; 81,8
+                DW	0543h	; 81,7
+                DW	0542h	; 81,6
+                DW	0541h	; 81,5
+                DW	0540h	; 81,4
+                DW	053Fh	; 81,3
+                DW	053Eh	; 81,2
+                DW	053Dh	; 81,1
+                DW	053Ch	; 81
+                DW	053Bh	; 80,9
+                DW	053Ah	; 80,8
+                DW	0539h	; 80,7
+                DW	0538h	; 80,6
+                DW	0537h	; 80,5
+                DW	0536h	; 80,4
+                DW	0535h	; 80,3
+                DW	0534h	; 80,2
+                DW	0533h	; 80,1
+                DW	0532h	; 80
+                DW	0531h	; 79,9
+                DW	0530h	; 79,8
+                DW	052Fh	; 79,7
+                DW	052Eh	; 79,6
+                DW	052Dh	; 79,5
+                DW	052Ch	; 79,4
+                DW	052Bh	; 79,3
+                DW	052Ah	; 79,2
+                DW	0529h	; 79,1
+                DW	0528h	; 79
+                DW	0527h	; 78,9
+                DW	0526h	; 78,8
+                DW	0525h	; 78,7
+                DW	0524h	; 78,6
+                DW	0523h	; 78,5
+                DW	0522h	; 78,4
+                DW	0521h	; 78,3
+                DW	0520h	; 78,2
+                DW	051Fh	; 78,1
+                DW	051Eh	; 78
+                DW	051Dh	; 77,9
+                DW	051Ch	; 77,8
+                DW	051Bh	; 77,7
+                DW	0519h	; 77,6
+                DW	0518h	; 77,5
+                DW	0517h	; 77,4
+                DW	0516h	; 77,3
+                DW	0515h	; 77,2
+                DW	0514h	; 77,1
+                DW	0513h	; 77
+                DW	0512h	; 76,9
+                DW	0511h	; 76,8
+                DW	0510h	; 76,7
+                DW	050Fh	; 76,6
+                DW	050Eh	; 76,5
+                DW	050Dh	; 76,4
+                DW	050Ch	; 76,3
+                DW	050Bh	; 76,2
+                DW	050Ah	; 76,1
+                DW	0509h	; 76
+                DW	0508h	; 75,9
+                DW	0507h	; 75,8
+                DW	0506h	; 75,7
+                DW	0505h	; 75,6
+                DW	0504h	; 75,5
+                DW	0503h	; 75,4
+                DW	0502h	; 75,3
+                DW	0501h	; 75,2
+                DW	0500h	; 75,1
+                DW	04FFh	; 75
+                DW	04FEh	; 74,9
+                DW	04FDh	; 74,8
+                DW	04FCh	; 74,7
+                DW	04FBh	; 74,6
+                DW	04FAh	; 74,5
+                DW	04F9h	; 74,4
+                DW	04F8h	; 74,3
+                DW	04F7h	; 74,2
+                DW	04F6h	; 74,1
+                DW	04F5h	; 74
+                DW	04F4h	; 73,9
+                DW	04F3h	; 73,8
+                DW	04F2h	; 73,7
+                DW	04F1h	; 73,6
+                DW	04F0h	; 73,5
+                DW	04EEh	; 73,4
+                DW	04EDh	; 73,3
+                DW	04ECh	; 73,2
+                DW	04EBh	; 73,1
+                DW	04EAh	; 73
+                DW	04E9h	; 72,9
+                DW	04E8h	; 72,8
+                DW	04E7h	; 72,7
+                DW	04E6h	; 72,6
+                DW	04E5h	; 72,5
+                DW	04E4h	; 72,4
+                DW	04E3h	; 72,3
+                DW	04E2h	; 72,2
+                DW	04E1h	; 72,1
+                DW	04E0h	; 72
+                DW	04DFh	; 71,9
+                DW	04DEh	; 71,8
+                DW	04DDh	; 71,7
+                DW	04DCh	; 71,6
+                DW	04DBh	; 71,5
+                DW	04DAh	; 71,4
+                DW	04D9h	; 71,3
+                DW	04D8h	; 71,2
+                DW	04D7h	; 71,1
+                DW	04D6h	; 71
+                DW	04D5h	; 70,9
+                DW	04D4h	; 70,8
+                DW	04D3h	; 70,7
+                DW	04D2h	; 70,6
+                DW	04D1h	; 70,5
+                DW	04D0h	; 70,4
+                DW	04CFh	; 70,3
+                DW	04CEh	; 70,2
+                DW	04CDh	; 70,1
+                DW	04CCh	; 70
+                DW	04CBh	; 69,9
+                DW	04CAh	; 69,8
+                DW	04C9h	; 69,7
+                DW	04C8h	; 69,6
+                DW	04C7h	; 69,5
+                DW	04C6h	; 69,4
+                DW	04C5h	; 69,3
+                DW	04C4h	; 69,2
+                DW	04C2h	; 69,1
+                DW	04C1h	; 69
+                DW	04C0h	; 68,9
+                DW	04BFh	; 68,8
+                DW	04BEh	; 68,7
+                DW	04BDh	; 68,6
+                DW	04BCh	; 68,5
+                DW	04BBh	; 68,4
+                DW	04BAh	; 68,3
+                DW	04B9h	; 68,2
+                DW	04B8h	; 68,1
+                DW	04B7h	; 68
+                DW	04B6h	; 67,9
+                DW	04B5h	; 67,8
+                DW	04B4h	; 67,7
+                DW	04B3h	; 67,6
+                DW	04B2h	; 67,5
+                DW	04B1h	; 67,4
+                DW	04B0h	; 67,3
+                DW	04AFh	; 67,2
+                DW	04AEh	; 67,1
+                DW	04ADh	; 67
+                DW	04ACh	; 66,9
+                DW	04ABh	; 66,8
+                DW	04AAh	; 66,7
+                DW	04A9h	; 66,6
+                DW	04A8h	; 66,5
+                DW	04A7h	; 66,4
+                DW	04A6h	; 66,3
+                DW	04A5h	; 66,2
+                DW	04A4h	; 66,1
+                DW	04A3h	; 66
+                DW	04A2h	; 65,9
+                DW	04A1h	; 65,8
+                DW	04A0h	; 65,7
+                DW	049Fh	; 65,6
+                DW	049Eh	; 65,5
+                DW	049Dh	; 65,4
+                DW	049Ch	; 65,3
+                DW	049Bh	; 65,2
+                DW	049Ah	; 65,1
+                DW	0499h	; 65
+                DW	0498h	; 64,9
+                DW	0496h	; 64,8
+                DW	0495h	; 64,7
+                DW	0494h	; 64,6
+                DW	0493h	; 64,5
+                DW	0492h	; 64,4
+                DW	0491h	; 64,3
+                DW	0490h	; 64,2
+                DW	048Fh	; 64,1
+                DW	048Eh	; 64
+                DW	048Dh	; 63,9
+                DW	048Ch	; 63,8
+                DW	048Bh	; 63,7
+                DW	048Ah	; 63,6
+                DW	0489h	; 63,5
+                DW	0488h	; 63,4
+                DW	0487h	; 63,3
+                DW	0486h	; 63,2
+                DW	0485h	; 63,1
+                DW	0484h	; 63
+                DW	0483h	; 62,9
+                DW	0482h	; 62,8
+                DW	0481h	; 62,7
+                DW	0480h	; 62,6
+                DW	047Fh	; 62,5
+                DW	047Eh	; 62,4
+                DW	047Dh	; 62,3
+                DW	047Ch	; 62,2
+                DW	047Bh	; 62,1
+                DW	047Ah	; 62
+                DW	0479h	; 61,9
+                DW	0478h	; 61,8
+                DW	0477h	; 61,7
+                DW	0476h	; 61,6
+                DW	0475h	; 61,5
+                DW	0474h	; 61,4
+                DW	0473h	; 61,3
+                DW	0472h	; 61,2
+                DW	0471h	; 61,1
+                DW	0470h	; 61
+                DW	046Fh	; 60,9
+                DW	046Eh	; 60,8
+                DW	046Dh	; 60,7
+                DW	046Bh	; 60,6
+                DW	046Ah	; 60,5
+                DW	0469h	; 60,4
+                DW	0468h	; 60,3
+                DW	0467h	; 60,2
+                DW	0466h	; 60,1
+                DW	0465h	; 60
+                DW	0464h	; 59,9
+                DW	0463h	; 59,8
+                DW	0462h	; 59,7
+                DW	0461h	; 59,6
+                DW	0460h	; 59,5
+                DW	045Fh	; 59,4
+                DW	045Eh	; 59,3
+                DW	045Dh	; 59,2
+                DW	045Ch	; 59,1
+                DW	045Bh	; 59
+                DW	045Ah	; 58,9
+                DW	0459h	; 58,8
+                DW	0458h	; 58,7
+                DW	0457h	; 58,6
+                DW	0456h	; 58,5
+                DW	0455h	; 58,4
+                DW	0454h	; 58,3
+                DW	0453h	; 58,2
+                DW	0452h	; 58,1
+                DW	0451h	; 58
+                DW	0450h	; 57,9
+                DW	044Fh	; 57,8
+                DW	044Eh	; 57,7
+                DW	044Dh	; 57,6
+                DW	044Ch	; 57,5
+                DW	044Bh	; 57,4
+                DW	044Ah	; 57,3
+                DW	0449h	; 57,2
+                DW	0448h	; 57,1
+                DW	0447h	; 57
+                DW	0446h	; 56,9
+                DW	0445h	; 56,8
+                DW	0444h	; 56,7
+                DW	0443h	; 56,6
+                DW	0442h	; 56,5
+                DW	0441h	; 56,4
+                DW	043Fh	; 56,3
+                DW	043Eh	; 56,2
+                DW	043Dh	; 56,1
+                DW	043Ch	; 56
+                DW	043Bh	; 55,9
+                DW	043Ah	; 55,8
+                DW	0439h	; 55,7
+                DW	0438h	; 55,6
+                DW	0437h	; 55,5
+                DW	0436h	; 55,4
+                DW	0435h	; 55,3
+                DW	0434h	; 55,2
+                DW	0433h	; 55,1
+                DW	0432h	; 55
+                DW	0431h	; 54,9
+                DW	0430h	; 54,8
+                DW	042Fh	; 54,7
+                DW	042Eh	; 54,6
+                DW	042Dh	; 54,5
+                DW	042Ch	; 54,4
+                DW	042Bh	; 54,3
+                DW	042Ah	; 54,2
+                DW	0429h	; 54,1
+                DW	0428h	; 54
+                DW	0427h	; 53,9
+                DW	0426h	; 53,8
+                DW	0425h	; 53,7
+                DW	0424h	; 53,6
+                DW	0423h	; 53,5
+                DW	0422h	; 53,4
+                DW	0421h	; 53,3
+                DW	0420h	; 53,2
+                DW	041Fh	; 53,1
+                DW	041Eh	; 53
+                DW	041Dh	; 52,9
+                DW	041Ch	; 52,8
+                DW	041Bh	; 52,7
+                DW	041Ah	; 52,6
+                DW	0419h	; 52,5
+                DW	0418h	; 52,4
+                DW	0417h	; 52,3
+                DW	0416h	; 52,2
+                DW	0414h	; 52,1
+                DW	0413h	; 52
+                DW	0412h	; 51,9
+                DW	0411h	; 51,8
+                DW	0410h	; 51,7
+                DW	040Fh	; 51,6
+                DW	040Eh	; 51,5
+                DW	040Dh	; 51,4
+                DW	040Ch	; 51,3
+                DW	040Bh	; 51,2
+                DW	040Ah	; 51,1
+                DW	0409h	; 51
+                DW	0408h	; 50,9
+                DW	0407h	; 50,8
+                DW	0406h	; 50,7
+                DW	0405h	; 50,6
+                DW	0404h	; 50,5
+                DW	0403h	; 50,4
+                DW	0402h	; 50,3
+                DW	0401h	; 50,2
+                DW	0400h	; 50,1
+                DW	03FFh	; 50
+                DW	03FEh	; 49,9
+                DW	03FDh	; 49,8
+                DW	03FCh	; 49,7
+                DW	03FBh	; 49,6
+                DW	03FAh	; 49,5
+                DW	03F9h	; 49,4
+                DW	03F8h	; 49,3
+                DW	03F7h	; 49,2
+                DW	03F6h	; 49,1
+                DW	03F5h	; 49
+                DW	03F4h	; 48,9
+                DW	03F3h	; 48,8
+                DW	03F2h	; 48,7
+                DW	03F1h	; 48,6
+                DW	03F0h	; 48,5
+                DW	03EFh	; 48,4
+                DW	03EEh	; 48,3
+                DW	03EDh	; 48,2
+                DW	03ECh	; 48,1
+                DW	03EBh	; 48
+                DW	03EAh	; 47,9
+                DW	03E8h	; 47,8
+                DW	03E7h	; 47,7
+                DW	03E6h	; 47,6
+                DW	03E5h	; 47,5
+                DW	03E4h	; 47,4
+                DW	03E3h	; 47,3
+                DW	03E2h	; 47,2
+                DW	03E1h	; 47,1
+                DW	03E0h	; 47
+                DW	03DFh	; 46,9
+                DW	03DEh	; 46,8
+                DW	03DDh	; 46,7
+                DW	03DCh	; 46,6
+                DW	03DBh	; 46,5
+                DW	03DAh	; 46,4
+                DW	03D9h	; 46,3
+                DW	03D8h	; 46,2
+                DW	03D7h	; 46,1
+                DW	03D6h	; 46
+                DW	03D5h	; 45,9
+                DW	03D4h	; 45,8
+                DW	03D3h	; 45,7
+                DW	03D2h	; 45,6
+                DW	03D1h	; 45,5
+                DW	03D0h	; 45,4
+                DW	03CFh	; 45,3
+                DW	03CEh	; 45,2
+                DW	03CDh	; 45,1
+                DW	03CCh	; 45
+                DW	03CBh	; 44,9
+                DW	03CAh	; 44,8
+                DW	03C9h	; 44,7
+                DW	03C8h	; 44,6
+                DW	03C7h	; 44,5
+                DW	03C6h	; 44,4
+                DW	03C5h	; 44,3
+                DW	03C4h	; 44,2
+                DW	03C3h	; 44,1
+                DW	03C2h	; 44
+                DW	03C1h	; 43,9
+                DW	03C0h	; 43,8
+                DW	03BFh	; 43,7
+                DW	03BDh	; 43,6
+                DW	03BCh	; 43,5
+                DW	03BBh	; 43,4
+                DW	03BAh	; 43,3
+                DW	03B9h	; 43,2
+                DW	03B8h	; 43,1
+                DW	03B7h	; 43
+                DW	03B6h	; 42,9
+                DW	03B5h	; 42,8
+                DW	03B4h	; 42,7
+                DW	03B3h	; 42,6
+                DW	03B2h	; 42,5
+                DW	03B1h	; 42,4
+                DW	03B0h	; 42,3
+                DW	03AFh	; 42,2
+                DW	03AEh	; 42,1
+                DW	03ADh	; 42
+                DW	03ACh	; 41,9
+                DW	03ABh	; 41,8
+                DW	03AAh	; 41,7
+                DW	03A9h	; 41,6
+                DW	03A8h	; 41,5
+                DW	03A7h	; 41,4
+                DW	03A6h	; 41,3
+                DW	03A5h	; 41,2
+                DW	03A4h	; 41,1
+                DW	03A3h	; 41
+                DW	03A2h	; 40,9
+                DW	03A1h	; 40,8
+                DW	03A0h	; 40,7
+                DW	039Fh	; 40,6
+                DW	039Eh	; 40,5
+                DW	039Dh	; 40,4
+                DW	039Ch	; 40,3
+                DW	039Bh	; 40,2
+                DW	039Ah	; 40,1
+                DW	0399h	; 40
+                DW	0398h	; 39,9
+                DW	0397h	; 39,8
+                DW	0396h	; 39,7
+                DW	0395h	; 39,6
+                DW	0394h	; 39,5
+                DW	0393h	; 39,4
+                DW	0391h	; 39,3
+                DW	0390h	; 39,2
+                DW	038Fh	; 39,1
+                DW	038Eh	; 39
+                DW	038Dh	; 38,9
+                DW	038Ch	; 38,8
+                DW	038Bh	; 38,7
+                DW	038Ah	; 38,6
+                DW	0389h	; 38,5
+                DW	0388h	; 38,4
+                DW	0387h	; 38,3
+                DW	0386h	; 38,2
+                DW	0385h	; 38,1
+                DW	0384h	; 38
+                DW	0383h	; 37,9
+                DW	0382h	; 37,8
+                DW	0381h	; 37,7
+                DW	0380h	; 37,6
+                DW	037Fh	; 37,5
+                DW	037Eh	; 37,4
+                DW	037Dh	; 37,3
+                DW	037Ch	; 37,2
+                DW	037Bh	; 37,1
+                DW	037Ah	; 37
+                DW	0379h	; 36,9
+                DW	0378h	; 36,8
+                DW	0377h	; 36,7
+                DW	0376h	; 36,6
+                DW	0375h	; 36,5
+                DW	0374h	; 36,4
+                DW	0373h	; 36,3
+                DW	0372h	; 36,2
+                DW	0371h	; 36,1
+                DW	0370h	; 36
+                DW	036Fh	; 35,9
+                DW	036Eh	; 35,8
+                DW	036Dh	; 35,7
+                DW	036Ch	; 35,6
+                DW	036Bh	; 35,5
+                DW	036Ah	; 35,4
+                DW	0369h	; 35,3
+                DW	0368h	; 35,2
+                DW	0366h	; 35,1
+                DW	0365h	; 35
+                DW	0364h	; 34,9
+                DW	0363h	; 34,8
+                DW	0362h	; 34,7
+                DW	0361h	; 34,6
+                DW	0360h	; 34,5
+                DW	035Fh	; 34,4
+                DW	035Eh	; 34,3
+                DW	035Dh	; 34,2
+                DW	035Ch	; 34,1
+                DW	035Bh	; 34
+                DW	035Ah	; 33,9
+                DW	0359h	; 33,8
+                DW	0358h	; 33,7
+                DW	0357h	; 33,6
+                DW	0356h	; 33,5
+                DW	0355h	; 33,4
+                DW	0354h	; 33,3
+                DW	0353h	; 33,2
+                DW	0352h	; 33,1
+                DW	0351h	; 33
+                DW	0350h	; 32,9
+                DW	034Fh	; 32,8
+                DW	034Eh	; 32,7
+                DW	034Dh	; 32,6
+                DW	034Ch	; 32,5
+                DW	034Bh	; 32,4
+                DW	034Ah	; 32,3
+                DW	0349h	; 32,2
+                DW	0348h	; 32,1
+                DW	0347h	; 32
+                DW	0346h	; 31,9
+                DW	0345h	; 31,8
+                DW	0344h	; 31,7
+                DW	0343h	; 31,6
+                DW	0342h	; 31,5
+                DW	0341h	; 31,4
+                DW	0340h	; 31,3
+                DW	033Fh	; 31,2
+                DW	033Eh	; 31,1
+                DW	033Dh	; 31
+                DW	033Ch	; 30,9
+                DW	033Ah	; 30,8
+                DW	0339h	; 30,7
+                DW	0338h	; 30,6
+                DW	0337h	; 30,5
+                DW	0336h	; 30,4
+                DW	0335h	; 30,3
+                DW	0334h	; 30,2
+                DW	0333h	; 30,1
+                DW	0332h	; 30
+                DW	0331h	; 29,9
+                DW	0330h	; 29,8
+                DW	032Fh	; 29,7
+                DW	032Eh	; 29,6
+                DW	032Dh	; 29,5
+                DW	032Ch	; 29,4
+                DW	032Bh	; 29,3
+                DW	032Ah	; 29,2
+                DW	0329h	; 29,1
+                DW	0328h	; 29
+                DW	0327h	; 28,9
+                DW	0326h	; 28,8
+                DW	0325h	; 28,7
+                DW	0324h	; 28,6
+                DW	0323h	; 28,5
+                DW	0322h	; 28,4
+                DW	0321h	; 28,3
+                DW	0320h	; 28,2
+                DW	031Fh	; 28,1
+                DW	031Eh	; 28
+                DW	031Dh	; 27,9
+                DW	031Ch	; 27,8
+                DW	031Bh	; 27,7
+                DW	031Ah	; 27,6
+                DW	0319h	; 27,5
+                DW	0318h	; 27,4
+                DW	0317h	; 27,3
+                DW	0316h	; 27,2
+                DW	0315h	; 27,1
+                DW	0314h	; 27
+                DW	0313h	; 26,9
+                DW	0312h	; 26,8
+                DW	0311h	; 26,7
+                DW	0310h	; 26,6
+                DW	030Eh	; 26,5
+                DW	030Dh	; 26,4
+                DW	030Ch	; 26,3
+                DW	030Bh	; 26,2
+                DW	030Ah	; 26,1
+                DW	0309h	; 26
+                DW	0308h	; 25,9
+                DW	0307h	; 25,8
+                DW	0306h	; 25,7
+                DW	0305h	; 25,6
+                DW	0304h	; 25,5
+                DW	0303h	; 25,4
+                DW	0302h	; 25,3
+                DW	0301h	; 25,2
+                DW	0300h	; 25,1
+                DW	02FFh	; 25
+                DW	02FEh	; 24,9
+                DW	02FDh	; 24,8
+                DW	02FCh	; 24,7
+                DW	02FBh	; 24,6
+                DW	02FAh	; 24,5
+                DW	02F9h	; 24,4
+                DW	02F8h	; 24,3
+                DW	02F7h	; 24,2
+                DW	02F6h	; 24,1
+                DW	02F5h	; 24
+                DW	02F4h	; 23,9
+                DW	02F3h	; 23,8
+                DW	02F2h	; 23,7
+                DW	02F1h	; 23,6
+                DW	02F0h	; 23,5
+                DW	02EFh	; 23,4
+                DW	02EEh	; 23,3
+                DW	02EDh	; 23,2
+                DW	02ECh	; 23,1
+                DW	02EBh	; 23
+                DW	02EAh	; 22,9
+                DW	02E9h	; 22,8
+                DW	02E8h	; 22,7
+                DW	02E7h	; 22,6
+                DW	02E6h	; 22,5
+                DW	02E5h	; 22,4
+                DW	02E3h	; 22,3
+                DW	02E2h	; 22,2
+                DW	02E1h	; 22,1
+                DW	02E0h	; 22
+                DW	02DFh	; 21,9
+                DW	02DEh	; 21,8
+                DW	02DDh	; 21,7
+                DW	02DCh	; 21,6
+                DW	02DBh	; 21,5
+                DW	02DAh	; 21,4
+                DW	02D9h	; 21,3
+                DW	02D8h	; 21,2
+                DW	02D7h	; 21,1
+                DW	02D6h	; 21
+                DW	02D5h	; 20,9
+                DW	02D4h	; 20,8
+                DW	02D3h	; 20,7
+                DW	02D2h	; 20,6
+                DW	02D1h	; 20,5
+                DW	02D0h	; 20,4
+                DW	02CFh	; 20,3
+                DW	02CEh	; 20,2
+                DW	02CDh	; 20,1
+                DW	02CCh	; 20
+                DW	02CBh	; 19,9
+                DW	02CAh	; 19,8
+                DW	02C9h	; 19,7
+                DW	02C8h	; 19,6
+                DW	02C7h	; 19,5
+                DW	02C6h	; 19,4
+                DW	02C5h	; 19,3
+                DW	02C4h	; 19,2
+                DW	02C3h	; 19,1
+                DW	02C2h	; 19
+                DW	02C1h	; 18,9
+                DW	02C0h	; 18,8
+                DW	02BFh	; 18,7
+                DW	02BEh	; 18,6
+                DW	02BDh	; 18,5
+                DW	02BCh	; 18,4
+                DW	02BBh	; 18,3
+                DW	02BAh	; 18,2
+                DW	02B9h	; 18,1
+                DW	02B7h	; 18
+                DW	02B6h	; 17,9
+                DW	02B5h	; 17,8
+                DW	02B4h	; 17,7
+                DW	02B3h	; 17,6
+                DW	02B2h	; 17,5
+                DW	02B1h	; 17,4
+                DW	02B0h	; 17,3
+                DW	02AFh	; 17,2
+                DW	02AEh	; 17,1
+                DW	02ADh	; 17
+                DW	02ACh	; 16,9
+                DW	02ABh	; 16,8
+                DW	02AAh	; 16,7
+                DW	02A9h	; 16,6
+                DW	02A8h	; 16,5
+                DW	02A7h	; 16,4
+                DW	02A6h	; 16,3
+                DW	02A5h	; 16,2
+                DW	02A4h	; 16,1
+                DW	02A3h	; 16
+                DW	02A2h	; 15,9
+                DW	02A1h	; 15,8
+                DW	02A0h	; 15,7
+                DW	029Fh	; 15,6
+                DW	029Eh	; 15,5
+                DW	029Dh	; 15,4
+                DW	029Ch	; 15,3
+                DW	029Bh	; 15,2
+                DW	029Ah	; 15,1
+                DW	0299h	; 15
+                DW	0298h	; 14,9
+                DW	0297h	; 14,8
+                DW	0296h	; 14,7
+                DW	0295h	; 14,6
+                DW	0294h	; 14,5
+                DW	0293h	; 14,4
+                DW	0292h	; 14,3
+                DW	0291h	; 14,2
+                DW	0290h	; 14,1
+                DW	028Fh	; 14
+                DW	028Eh	; 13,9
+                DW	028Ch	; 13,8
+                DW	028Bh	; 13,7
+                DW	028Ah	; 13,6
+                DW	0289h	; 13,5
+                DW	0288h	; 13,4
+                DW	0287h	; 13,3
+                DW	0286h	; 13,2
+                DW	0285h	; 13,1
+                DW	0284h	; 13
+                DW	0283h	; 12,9
+                DW	0282h	; 12,8
+                DW	0281h	; 12,7
+                DW	0280h	; 12,6
+                DW	027Fh	; 12,5
+                DW	027Eh	; 12,4
+                DW	027Dh	; 12,3
+                DW	027Ch	; 12,2
+                DW	027Bh	; 12,1
+                DW	027Ah	; 12
+                DW	0279h	; 11,9
+                DW	0278h	; 11,8
+                DW	0277h	; 11,7
+                DW	0276h	; 11,6
+                DW	0275h	; 11,5
+                DW	0274h	; 11,4
+                DW	0273h	; 11,3
+                DW	0272h	; 11,2
+                DW	0271h	; 11,1
+                DW	0270h	; 11
+                DW	026Fh	; 10,9
+                DW	026Eh	; 10,8
+                DW	026Dh	; 10,7
+                DW	026Ch	; 10,6
+                DW	026Bh	; 10,5
+                DW	026Ah	; 10,4
+                DW	0269h	; 10,3
+                DW	0268h	; 10,2
+                DW	0267h	; 10,1
+                DW	0266h	; 10
+                DW	0265h	; 9,9
+                DW	0264h	; 9,8
+                DW	0263h	; 9,7
+                DW	0262h	; 9,6
+                DW	0260h	; 9,5
+                DW	025Fh	; 9,4
+                DW	025Eh	; 9,3
+                DW	025Dh	; 9,2
+                DW	025Ch	; 9,1
+                DW	025Bh	; 9
+                DW	025Ah	; 8,9
+                DW	0259h	; 8,8
+                DW	0258h	; 8,7
+                DW	0257h	; 8,6
+                DW	0256h	; 8,5
+                DW	0255h	; 8,4
+                DW	0254h	; 8,3
+                DW	0253h	; 8,2
+                DW	0252h	; 8,1
+                DW	0251h	; 8
+                DW	0250h	; 7,9
+                DW	024Fh	; 7,8
+                DW	024Eh	; 7,7
+                DW	024Dh	; 7,6
+                DW	024Ch	; 7,5
+                DW	024Bh	; 7,4
+                DW	024Ah	; 7,3
+                DW	0249h	; 7,2
+                DW	0248h	; 7,1
+                DW	0247h	; 7
+                DW	0246h	; 6,9
+                DW	0245h	; 6,8
+                DW	0244h	; 6,7
+                DW	0243h	; 6,6
+                DW	0242h	; 6,5
+                DW	0241h	; 6,4
+                DW	0240h	; 6,3
+                DW	023Fh	; 6,2
+                DW	023Eh	; 6,1
+                DW	023Dh	; 6
+                DW	023Ch	; 5,9
+                DW	023Bh	; 5,8
+                DW	023Ah	; 5,7
+                DW	0239h	; 5,6
+                DW	0238h	; 5,5
+                DW	0237h	; 5,4
+                DW	0235h	; 5,3
+                DW	0234h	; 5,2
+                DW	0233h	; 5,1
+                DW	0232h	; 5
+                DW	0231h	; 4,9
+                DW	0230h	; 4,8
+                DW	022Fh	; 4,7
+                DW	022Eh	; 4,6
+                DW	022Dh	; 4,5
+                DW	022Ch	; 4,4
+                DW	022Bh	; 4,3
+                DW	022Ah	; 4,2
+                DW	0229h	; 4,1
+                DW	0228h	; 4
+                DW	0227h	; 3,9
+                DW	0226h	; 3,8
+                DW	0225h	; 3,7
+                DW	0224h	; 3,6
+                DW	0223h	; 3,5
+                DW	0222h	; 3,4
+                DW	0221h	; 3,3
+                DW	0220h	; 3,2
+                DW	021Fh	; 3,1
+                DW	021Eh	; 3
+                DW	021Dh	; 2,9
+                DW	021Ch	; 2,8
+                DW	021Bh	; 2,7
+                DW	021Ah	; 2,6
+                DW	0219h	; 2,5
+                DW	0218h	; 2,4
+                DW	0217h	; 2,3
+                DW	0216h	; 2,2
+                DW	0215h	; 2,1
+                DW	0214h	; 2
+                DW	0213h	; 1,9
+                DW	0212h	; 1,8
+                DW	0211h	; 1,7
+                DW	0210h	; 1,6
+                DW	020Fh	; 1,5
+                DW	020Eh	; 1,4
+                DW	020Dh	; 1,3
+                DW	020Ch	; 1,2
+                DW	020Bh	; 1,1
+                DW	0209h	; 1,0
+                DW	0208h	; 0,9
+                DW	0207h	; 0,8
+                DW	0206h	; 0,7
+                DW	0205h	; 0,6
+                DW	0204h	; 0,5
+                DW	0203h	; 0,4
+                DW	0202h	; 0,3
+                DW	0201h	; 0,2
+                DW	0200h	; 0,1
+
+;-----------------------------------------------------------------------------------------------
+TempTabelleN
+;-----------------------------------------------------------------------------------------------                
+                DW	01FFh	;  0,0
+                DW	01FEh	; -0,1
+                DW	01FDh	; -0,2
+                DW	01FCh	; -0,3
+                DW	01FBh	; -0,4
+                DW	01FAh	; -0,5
+                DW	01F9h	; -0,6
+                DW	01F8h	; -0,7
+                DW	01F7h	; -0,8
+                DW	01F6h	; -0,9
+                DW	01F5h	; -1,0
+                DW	01F4h	; -1,1
+                DW	01F3h	; -1,2
+                DW	01F2h	; -1,3
+                DW	01F1h	; -1,4
+                DW	01F0h	; -1,5
+                DW	01EFh	; -1,6
+                DW	01EEh	; -1,7
+                DW	01EDh	; -1,8
+                DW	01ECh	; -1,9
+                DW	01EBh	; -2,0
+                DW	01EAh	; -2,1
+                DW	01E9h	; -2,2
+                DW	01E8h	; -2,3
+                DW	01E7h	; -2,4
+                DW	01E6h	; -2,5
+                DW	01E5h	; -2,6
+                DW	01E4h	; -2,7
+                DW	01E3h	; -2,8
+                DW	01E2h	; -2,9
+                DW	01E1h	; -3,0
+                DW	01E0h	; -3,1
+                DW	01DEh	; -3,2
+                DW	01DDh	; -3,3
+                DW	01DCh	; -3,4
+                DW	01DBh	; -3,5
+                DW	01DAh	; -3,6
+                DW	01D9h	; -3,7
+                DW	01D8h	; -3,8
+                DW	01D7h	; -3,9
+                DW	01D6h	; -4,0
+                DW	01D5h	; -4,1
+                DW	01D4h	; -4,2
+                DW	01D3h	; -4,3
+                DW	01D2h	; -4,4
+                DW	01D1h	; -4,5
+                DW	01D0h	; -4,6
+                DW	01CFh	; -4,7
+                DW	01CEh	; -4,8
+                DW	01CDh	; -4,9
+                DW	01CCh	; -5,0
+                DW	01CBh	; -5,1
+                DW	01CAh	; -5,2
+                DW	01C9h	; -5,3
+                DW	01C8h	; -5,4
+                DW	01C7h	; -5,5
+                DW	01C6h	; -5,6
+                DW	01C5h	; -5,7
+                DW	01C4h	; -5,8
+                DW	01C3h	; -5,9
+                DW	01C2h	; -6,0
+                DW	01C1h	; -6,1
+                DW	01C0h	; -6,2
+                DW	01BFh	; -6,3
+                DW	01BEh	; -6,4
+                DW	01BDh	; -6,5
+                DW	01BCh	; -6,6
+                DW	01BBh	; -6,7
+                DW	01BAh	; -6,8
+                DW	01B9h	; -6,9
+                DW	01B8h	; -7,0
+                DW	01B7h	; -7,1
+                DW	01B6h	; -7,2
+                DW	01B5h	; -7,3
+                DW	01B4h	; -7,4
+                DW	01B2h	; -7,5
+                DW	01B1h	; -7,6
+                DW	01B0h	; -7,7
+                DW	01AFh	; -7,8
+                DW	01AEh	; -7,9
+                DW	01ADh	; -8,0
+                DW	01ACh	; -8,1
+                DW	01ABh	; -8,2
+                DW	01AAh	; -8,3
+                DW	01A9h	; -8,4
+                DW	01A8h	; -8,5
+                DW	01A7h	; -8,6
+                DW	01A6h	; -8,7
+                DW	01A5h	; -8,8
+                DW	01A4h	; -8,9
+                DW	01A3h	; -9,0
+                DW	01A2h	; -9,1
+                DW	01A1h	; -9,2
+                DW	01A0h	; -9,3
+                DW	019Fh	; -9,4
+                DW	019Eh	; -9,5
+                DW	019Dh	; -9,6
+                DW	019Ch	; -9,7
+                DW	019Bh	; -9,8
+                DW	019Ah	; -9,9
+                DW	0199h	; -10,0
+                DW	0198h	; -10,1
+                DW	0197h	; -10,2
+                DW	0196h	; -10,3
+                DW	0195h	; -10,4
+                DW	0194h	; -10,5
+                DW	0193h	; -10,6
+                DW	0192h	; -10,7
+                DW	0191h	; -10,8
+                DW	0190h	; -10,9
+                DW	018Fh	; -11,0
+                DW	018Eh	; -11,1
+                DW	018Dh	; -11,2
+                DW	018Ch	; -11,3
+                DW	018Bh	; -11,4
+                DW	018Ah	; -11,5
+                DW	0189h	; -11,6
+                DW	0188h	; -11,7
+                DW	0186h	; -11,8
+                DW	0185h	; -11,9
+                DW	0184h	; -12,0
+                DW	0183h	; -12,1
+                DW	0182h	; -12,2
+                DW	0181h	; -12,3
+                DW	0180h	; -12,4
+                DW	017Fh	; -12,5
+                DW	017Eh	; -12,6
+                DW	017Dh	; -12,7
+                DW	017Ch	; -12,8
+                DW	017Bh	; -12,9
+                DW	017Ah	; -13
+                DW	0179h	; -13,1
+                DW	0178h	; -13,2
+                DW	0177h	; -13,3
+                DW	0176h	; -13,4
+                DW	0175h	; -13,5
+                DW	0174h	; -13,6
+                DW	0173h	; -13,7
+                DW	0172h	; -13,8
+                DW	0171h	; -13,9
+                DW	0170h	; -14
+                DW	016Fh	; -14,1
+                DW	016Eh	; -14,2
+                DW	016Dh	; -14,3
+                DW	016Ch	; -14,4
+                DW	016Bh	; -14,5
+                DW	016Ah	; -14,6
+                DW	0169h	; -14,7
+                DW	0168h	; -14,8
+                DW	0167h	; -14,9
+                DW	0166h	; -15
+                DW	0165h	; -15,1
+                DW	0164h	; -15,2
+                DW	0163h	; -15,3
+                DW	0162h	; -15,4
+                DW	0161h	; -15,5
+                DW	0160h	; -15,6
+                DW	015Fh	; -15,7
+                DW	015Eh	; -15,8
+                DW	015Dh	; -15,9
+                DW	015Bh	; -16
+                DW	015Ah	; -16,1
+                DW	0159h	; -16,2
+                DW	0158h	; -16,3
+                DW	0157h	; -16,4
+                DW	0156h	; -16,5
+                DW	0155h	; -16,6
+                DW	0154h	; -16,7
+                DW	0153h	; -16,8
+                DW	0152h	; -16,9
+                DW	0151h	; -17
+                DW	0150h	; -17,1
+                DW	014Fh	; -17,2
+                DW	014Eh	; -17,3
+                DW	014Dh	; -17,4
+                DW	014Ch	; -17,5
+                DW	014Bh	; -17,6
+                DW	014Ah	; -17,7
+                DW	0149h	; -17,8
+                DW	0148h	; -17,9
+                DW	0147h	; -18
+                DW	0146h	; -18,1
+                DW	0145h	; -18,2
+                DW	0144h	; -18,3
+                DW	0143h	; -18,4
+                DW	0142h	; -18,5
+                DW	0141h	; -18,6
+                DW	0140h	; -18,7
+                DW	013Fh	; -18,8
+                DW	013Eh	; -18,9
+                DW	013Dh	; -19
+                DW	013Ch	; -19,1
+                DW	013Bh	; -19,2
+                DW	013Ah	; -19,3
+                DW	0139h	; -19,4
+                DW	0138h	; -19,5
+                DW	0137h	; -19,6
+                DW	0136h	; -19,7
+                DW	0135h	; -19,8
+                DW	0134h	; -19,9
+                DW	0133h	; -20
+                DW	0132h	; -20,1
+                DW	0131h	; -20,2
+                DW	012Fh	; -20,3
+                DW	012Eh	; -20,4
+                DW	012Dh	; -20,5
+                DW	012Ch	; -20,6
+                DW	012Bh	; -20,7
+                DW	012Ah	; -20,8
+                DW	0129h	; -20,9
+                DW	0128h	; -21
+                DW	0127h	; -21,1
+                DW	0126h	; -21,2
+                DW	0125h	; -21,3
+                DW	0124h	; -21,4
+                DW	0123h	; -21,5
+                DW	0122h	; -21,6
+                DW	0121h	; -21,7
+                DW	0120h	; -21,8
+                DW	011Fh	; -21,9
+                DW	011Eh	; -22
+                DW	011Dh	; -22,1
+                DW	011Ch	; -22,2
+                DW	011Bh	; -22,3
+                DW	011Ah	; -22,4
+                DW	0119h	; -22,5
+                DW	0118h	; -22,6
+                DW	0117h	; -22,7
+                DW	0116h	; -22,8
+                DW	0115h	; -22,9
+                DW	0114h	; -23
+                DW	0113h	; -23,1
+                DW	0112h	; -23,2
+                DW	0111h	; -23,3
+                DW	0110h	; -23,4
+                DW	010Fh	; -23,5
+                DW	010Eh	; -23,6
+                DW	010Dh	; -23,7
+                DW	010Ch	; -23,8
+                DW	010Bh	; -23,9
+                DW	010Ah	; -24
+                DW	0109h	; -24,1
+                DW	0108h	; -24,2
+                DW	0107h	; -24,3
+                DW	0106h	; -24,4
+                DW	0104h	; -24,5
+                DW	0103h	; -24,6
+                DW	0102h	; -24,7
+                DW	0101h	; -24,8
+                DW	0100h	; -24,9
+                DW	00FFh	; -25
+                DW	00FEh	; -25,1
+                DW	00FDh	; -25,2
+                DW	00FCh	; -25,3
+                DW	00FBh	; -25,4
+                DW	00FAh	; -25,5
+                DW	00F9h	; -25,6
+                DW	00F8h	; -25,7
+                DW	00F7h	; -25,8
+                DW	00F6h	; -25,9
+                DW	00F5h	; -26
+                DW	00F4h	; -26,1
+                DW	00F3h	; -26,2
+                DW	00F2h	; -26,3
+                DW	00F1h	; -26,4
+                DW	00F0h	; -26,5
+                DW	00EFh	; -26,6
+                DW	00EEh	; -26,7
+                DW	00EDh	; -26,8
+                DW	00ECh	; -26,9
+                DW	00EBh	; -27
+                DW	00EAh	; -27,1
+                DW	00E9h	; -27,2
+                DW	00E8h	; -27,3
+                DW	00E7h	; -27,4
+                DW	00E6h	; -27,5
+                DW	00E5h	; -27,6
+                DW	00E4h	; -27,7
+                DW	00E3h	; -27,8
+                DW	00E2h	; -27,9
+                DW	00E1h	; -28
+                DW	00E0h	; -28,1
+                DW	00DFh	; -28,2
+                DW	00DEh	; -28,3
+                DW	00DDh	; -28,4
+                DW	00DCh	; -28,5
+                DW	00DBh	; -28,6
+                DW	00DAh	; -28,7
+                DW	00D8h	; -28,8
+                DW	00D7h	; -28,9
+                DW	00D6h	; -29
+                DW	00D5h	; -29,1
+                DW	00D4h	; -29,2
+                DW	00D3h	; -29,3
+                DW	00D2h	; -29,4
+                DW	00D1h	; -29,5
+                DW	00D0h	; -29,6
+                DW	00CFh	; -29,7
+                DW	00CEh	; -29,8
+                DW	00CDh	; -29,9
+                DW	00CCh	; -30
+                DW	00CBh	; -30,1
+                DW	00CAh	; -30,2
+                DW	00C9h	; -30,3
+                DW	00C8h	; -30,4
+                DW	00C7h	; -30,5
+                DW	00C6h	; -30,6
+                DW	00C5h	; -30,7
+                DW	00C4h	; -30,8
+                DW	00C3h	; -30,9
+                DW	00C2h	; -31
+                DW	00C1h	; -31,1
+                DW	00C0h	; -31,2
+                DW	00BFh	; -31,3
+                DW	00BEh	; -31,4
+                DW	00BDh	; -31,5
+                DW	00BCh	; -31,6
+                DW	00BBh	; -31,7
+                DW	00BAh	; -31,8
+                DW	00B9h	; -31,9
+                DW	00B8h	; -32
+                DW	00B7h	; -32,1
+                DW	00B6h	; -32,2
+                DW	00B5h	; -32,3
+                DW	00B4h	; -32,4
+                DW	00B3h	; -32,5
+                DW	00B2h	; -32,6
+                DW	00B1h	; -32,7
+                DW	00B0h	; -32,8
+                DW	00AFh	; -32,9
+                DW	00ADh	; -33
+                DW	00ACh	; -33,1
+                DW	00ABh	; -33,2
+                DW	00AAh	; -33,3
+                DW	00A9h	; -33,4
+                DW	00A8h	; -33,5
+                DW	00A7h	; -33,6
+                DW	00A6h	; -33,7
+                DW	00A5h	; -33,8
+                DW	00A4h	; -33,9
+                DW	00A3h	; -34
+                DW	00A2h	; -34,1
+                DW	00A1h	; -34,2
+                DW	00A0h	; -34,3
+                DW	009Fh	; -34,4
+                DW	009Eh	; -34,5
+                DW	009Dh	; -34,6
+                DW	009Ch	; -34,7
+                DW	009Bh	; -34,8
+                DW	009Ah	; -34,9
+                DW	0099h	; -35
+                DW	0098h	; -35,1
+                DW	0097h	; -35,2
+                DW	0096h	; -35,3
+                DW	0095h	; -35,4
+                DW	0094h	; -35,5
+                DW	0093h	; -35,6
+                DW	0092h	; -35,7
+                DW	0091h	; -35,8
+                DW	0090h	; -35,9
+                DW	008Fh	; -36
+                DW	008Eh	; -36,1
+                DW	008Dh	; -36,2
+                DW	008Ch	; -36,3
+                DW	008Bh	; -36,4
+                DW	008Ah	; -36,5
+                DW	0089h	; -36,6
+                DW	0088h	; -36,7
+                DW	0087h	; -36,8
+                DW	0086h	; -36,9
+                DW	0085h	; -37
+                DW	0084h	; -37,1
+                DW	0083h	; -37,2
+                DW	0081h	; -37,3
+                DW	0080h	; -37,4
+                DW	007Fh	; -37,5
+                DW	007Eh	; -37,6
+                DW	007Dh	; -37,7
+                DW	007Ch	; -37,8
+                DW	007Bh	; -37,9
+                DW	007Ah	; -38
+                DW	0079h	; -38,1
+                DW	0078h	; -38,2
+                DW	0077h	; -38,3
+                DW	0076h	; -38,4
+                DW	0075h	; -38,5
+                DW	0074h	; -38,6
+                DW	0073h	; -38,7
+                DW	0072h	; -38,8
+                DW	0071h	; -38,9
+                DW	0070h	; -39
+                DW	006Fh	; -39,1
+                DW	006Eh	; -39,2
+                DW	006Dh	; -39,3
+                DW	006Ch	; -39,4
+                DW	006Bh	; -39,5
+                DW	006Ah	; -39,6
+                DW	0069h	; -39,7
+                DW	0068h	; -39,8
+                DW	0067h	; -39,9
+                DW	0066h	; -40
+                DW	0065h	; -40,1
+                DW	0064h	; -40,2
+                DW	0063h	; -40,3
+                DW	0062h	; -40,4
+                DW	0061h	; -40,5
+                DW	0060h	; -40,6
+                DW	005Fh	; -40,7
+                DW	005Eh	; -40,8
+                DW	005Dh	; -40,9
+                DW	005Ch	; -41
+                DW	005Bh	; -41,1
+                DW	005Ah	; -41,2
+                DW	0059h	; -41,3
+                DW	0058h	; -41,4
+                DW	0056h	; -41,5
+                DW	0055h	; -41,6
+                DW	0054h	; -41,7
+                DW	0053h	; -41,8
+                DW	0052h	; -41,9
+                DW	0051h	; -42
+                DW	0050h	; -42,1
+                DW	004Fh	; -42,2
+                DW	004Eh	; -42,3
+                DW	004Dh	; -42,4
+                DW	004Ch	; -42,5
+                DW	004Bh	; -42,6
+                DW	004Ah	; -42,7
+                DW	0049h	; -42,8
+                DW	0048h	; -42,9
+                DW	0047h	; -43
+                DW	0046h	; -43,1
+                DW	0045h	; -43,2
+                DW	0044h	; -43,3
+                DW	0043h	; -43,4
+                DW	0042h	; -43,5
+                DW	0041h	; -43,6
+                DW	0040h	; -43,7
+                DW	003Fh	; -43,8
+                DW	003Eh	; -43,9
+                DW	003Dh	; -44
+                DW	003Ch	; -44,1
+                DW	003Bh	; -44,2
+                DW	003Ah	; -44,3
+                DW	0039h	; -44,4
+                DW	0038h	; -44,5
+                DW	0037h	; -44,6
+                DW	0036h	; -44,7
+                DW	0035h	; -44,8
+                DW	0034h	; -44,9
+                DW	0033h	; -45
+                DW	0032h	; -45,1
+                DW	0031h	; -45,2
+                DW	0030h	; -45,3
+                DW	002Fh	; -45,4
+                DW	002Eh	; -45,5
+                DW	002Dh	; -45,6
+                DW	002Ch	; -45,7
+                DW	002Ah	; -45,8
+                DW	0029h	; -45,9
+                DW	0028h	; -46
+                DW	0027h	; -46,1
+                DW	0026h	; -46,2
+                DW	0025h	; -46,3
+                DW	0024h	; -46,4
+                DW	0023h	; -46,5
+                DW	0022h	; -46,6
+                DW	0021h	; -46,7
+                DW	0020h	; -46,8
+                DW	001Fh	; -46,9
+                DW	001Eh	; -47
+                DW	001Dh	; -47,1
+                DW	001Ch	; -47,2
+                DW	001Bh	; -47,3
+                DW	001Ah	; -47,4
+                DW	0019h	; -47,5
+                DW	0018h	; -47,6
+                DW	0017h	; -47,7
+                DW	0016h	; -47,8
+                DW	0015h	; -47,9
+                DW	0014h	; -48
+                DW	0013h	; -48,1
+                DW	0012h	; -48,2
+                DW	0011h	; -48,3
+                DW	0010h	; -48,4
+                DW	000Fh	; -48,5
+                DW	000Eh	; -48,6
+                DW	000Dh	; -48,7
+                DW	000Ch	; -48,8
+                DW	000Bh	; -48,9
+                DW	000Ah	; -49
+                DW	0009h	; -49,1
+                DW	0008h	; -49,2
+                DW	0007h	; -49,3
+                DW	0006h	; -49,4
+                DW	0005h	; -49,5
+                DW	0004h	; -49,6
+                DW	0003h	; -49,7
+                DW	0002h	; -49,8
+                DW	0001h	; -49,9
+                DW	0000h	; -50
+
+//**********************************************************************************************
+Inerrupt_Routines:                              ; Interrupt Routines                           *
+//**********************************************************************************************
+TA0ISR0
+                
+TA0CC0          mov.w   &TA0CCR0,0(R14)
+                clr.w   &TA0R
+                incd    R14
+                bic.w   #CCIFG+COV,&TA0CCTL0
+                cmp.w   #BOR+0160h,R14
+                jne     NotEnde0
+                bic.b   #VCC1,&P3OUT
+                bic.b   #TSIC1,&P1SEL
+                bic.w   #CCIE,&TA0CCTL0
+                bic.w   #MC_2,&TA0CTL
+                bic.b   #LPM0,0(SP)
+NotEnde0:       reti
+
+TA0ISR1         ADD &TA0IV,PC   ; Add offset to Jump table 3
+                RETI            ; Vector 0: No interrupt 5
+                JMP TA0CC1      ; Vector 2: TA0CCR1 2
+                JMP TA0CC2      ; Vector 4: TA0CCR2 2
+                JMP TA0CC3      ; Vector 6: TA0CCR3 2
+                JMP TA0CC4      ; Vector 8: TA0CCR4 2
+                RETI            ; Vector 10: TA0CCR5 2
+                RETI            ; Vector 12: TA0CCR6 2
+
+TA0CC1          mov.w   &TA0CCR3,0(R14)
+                clr.w   &TA0R
+                incd    R14
+                bic.w   #CCIFG+COV,&TA0CCTL3
+                cmp.w   #BOR+0160h,R14
+                jne     NotEnde1
+                bic.b   #VCC1,&P3OUT
+                bic.b   #TSIC1,&P1SEL
+                bic.w   #CCIE,&TA0CCTL3
+                bic.w   #MC_2,&TA0CTL
+                bic.b   #LPM0,0(SP)
+NotEnde1:       reti
+
+TA0CC2          mov.w   &TA0CCR3,0(R14)
+                clr.w   &TA0R
+                incd    R14
+                bic.w   #CCIFG+COV,&TA0CCTL3
+                cmp.w   #BOR+0160h,R14
+                jne     NotEnde2
+                bic.b   #VCC2,&P3OUT
+                bic.b   #TSIC2,&P1SEL
+                bic.w   #CCIE,&TA0CCTL3
+                bic.w   #MC_2,&TA0CTL
+                bic.b   #LPM0,0(SP)
+NotEnde2:       reti
+
+TA0CC3          mov.w   &TA0CCR3,0(R14)
+                clr.w   &TA0R
+                incd    R14
+                bic.w   #CCIFG+COV,&TA0CCTL3
+                cmp.w   #BOR+0160h,R14
+                jne     NotEnde3
+                bic.b   #VCC3,&P3OUT
+                bic.b   #TSIC3,&P1SEL
+                bic.w   #CCIE,&TA0CCTL3
+                bic.w   #MC_2,&TA0CTL
+                bic.b   #LPM0,0(SP)
+NotEnde3:       reti
+
+TA0CC4          mov.w   &TA0CCR3,0(R14)
+                clr.w   &TA0R
+                incd    R14
+                bic.w   #CCIFG+COV,&TA0CCTL3
+                cmp.w   #BOR+0160h,R14
+                jne     NotEnde4
+                bic.b   #VCC4,&P3OUT
+                bic.b   #TSIC4,&P1SEL
+                bic.w   #CCIE,&TA0CCTL3
+                bic.w   #MC_2,&TA0CTL
+                bic.b   #LPM0,0(SP)
+NotEnde4:       reti
+
+                COMMON INTVEC(1)
+                
+                ORG TIMER0_A0_VECTOR
+                DW      TA0ISR0
+                ORG TIMER0_A1_VECTOR
+                DW      TA0ISR1
+//**********************************************************************************************
+//* End of program                                                                             *
+//**********************************************************************************************
+END

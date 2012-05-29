@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+
+<Project>
+  <Desktop>
+    <Static>
+      <Debug-Log>
+        
+        
+      <ColumnWidth0>20</ColumnWidth0><ColumnWidth1>1365</ColumnWidth1></Debug-Log>
+      <Build>
+        <ColumnWidth0>20</ColumnWidth0>
+        <ColumnWidth1>1023</ColumnWidth1>
+        <ColumnWidth2>273</ColumnWidth2>
+        <ColumnWidth3>68</ColumnWidth3>
+      </Build>
+      <Workspace>
+        <ColumnWidths>
+          
+          
+          
+          
+        <Column0>158</Column0><Column1>27</Column1><Column2>27</Column2><Column3>27</Column3></ColumnWidths>
+      </Workspace>
+      <Disassembly>
+        <col-names>
+          <item>Disassembly</item>
+          <item>_I0</item>
+        </col-names>
+        <col-widths>
+          <item>500</item>
+          <item>20</item>
+        </col-widths>
+        <DisasmHistory/>
+        <PreferedWindows>
+          <Position>2</Position>
+          <ScreenPosX>0</ScreenPosX>
+          <ScreenPosY>0</ScreenPosY>
+          <Windows/>
+        </PreferedWindows>
+        <ShowCodeCoverage>0</ShowCodeCoverage>
+        <ShowInstrProfiling>0</ShowInstrProfiling>
+      </Disassembly>
+      <WATCH_1>
+        <expressions>
+          
+          
+          
+          
+          
+        <item>BYTE</item><item>dataBuffer</item><item>count</item><item>i</item><item></item></expressions>
+        <col-names>
+          
+          
+          
+          
+        <item>Expression</item><item>Location</item><item>Type</item><item>Value</item></col-names>
+        <col-widths>
+          
+          
+          
+          
+        <item>100</item><item>150</item><item>100</item><item>186</item></col-widths>
+      </WATCH_1>
+      <Register/>
+    </Static>
+    <Windows>
+      
+      
+      
+      
+    <Wnd2>
+        <Tabs>
+          <Tab>
+            <Identity>TabID-31261-9232</Identity>
+            <TabName>Debug Log</TabName>
+            <Factory>Debug-Log</Factory>
+            <Session/>
+          </Tab>
+          <Tab>
+            <Identity>TabID-30739-9241</Identity>
+            <TabName>Build</TabName>
+            <Factory>Build</Factory>
+            <Session/>
+          </Tab>
+        </Tabs>
+        
+      <SelectedTab>0</SelectedTab></Wnd2><Wnd5>
+        <Tabs>
+          <Tab>
+            <Identity>TabID-9242-9235</Identity>
+            <TabName>Workspace</TabName>
+            <Factory>Workspace</Factory>
+            <Session>
+              
+            <NodeDict><ExpandedNode>&lt;ws&gt;</ExpandedNode><ExpandedNode>&lt;ws&gt;/C3_Example</ExpandedNode></NodeDict></Session>
+          </Tab>
+        </Tabs>
+        
+      <SelectedTab>0</SelectedTab></Wnd5><Wnd6>
+        <Tabs>
+          <Tab>
+            <Identity>TabID-7862-10489</Identity>
+            <TabName>Watch 1</TabName>
+            <Factory>WATCH_1</Factory>
+          </Tab>
+        </Tabs>
+        
+      <SelectedTab>0</SelectedTab></Wnd6><Wnd7>
+        <Tabs>
+          <Tab>
+            <Identity>TabID-29861-13761</Identity>
+            <TabName>Register</TabName>
+            <Factory>Register</Factory>
+            <Session>
+              
+              
+              
+              
+              
+            <REG1>0</REG1><REG2>0</REG2><Group>0</Group><States>1</States><State0>SR</State0></Session>
+          </Tab>
+        </Tabs>
+        
+      <SelectedTab>0</SelectedTab></Wnd7></Windows>
+    <Editor>
+      
+      
+      
+      
+    <Pane><Tab><Factory>TextEditor</Factory><Filename>$WS_DIR$\C3_Example\main.c</Filename><XPos>0</XPos><YPos>73</YPos><SelStart>3637</SelStart><SelEnd>3637</SelEnd></Tab><ActiveTab>0</ActiveTab><Tab><Factory>TextEditor</Factory><Filename>$WS_DIR$\C3_Example\usbConstructs.c</Filename><XPos>0</XPos><YPos>121</YPos><SelStart>10003</SelStart><SelEnd>10003</SelEnd></Tab><Tab><Factory>TextEditor</Factory><Filename>$WS_DIR$\C3_Example\usbConstructs.h</Filename><XPos>0</XPos><YPos>0</YPos><SelStart>282</SelStart><SelEnd>289</SelEnd></Tab><Tab><Factory>TextEditor</Factory><Filename>$WS_DIR$\C3_Example\USB_API\USB_CDC_API\UsbCdc.c</Filename><XPos>0</XPos><YPos>713</YPos><SelStart>33339</SelStart><SelEnd>33339</SelEnd></Tab></Pane><ActivePane>0</ActivePane><Sizes><Pane><X>1000000</X><Y>1000000</Y></Pane></Sizes><SplitMode>1</SplitMode></Editor>
+    <Positions>
+      
+      
+      
+      
+      
+    <Top><Row0><Sizes><Toolbar-0114f5e0><key>iaridepm.enu1</key></Toolbar-0114f5e0></Sizes></Row0><Row1><Sizes><Toolbar-12e50e50><key>debuggergui.enu1</key></Toolbar-12e50e50><Toolbar-12e516e8><key>430fet1</key></Toolbar-12e516e8></Sizes></Row1><Row2><Sizes/></Row2><Row3><Sizes/></Row3><Row4><Sizes/></Row4></Top><Left><Row0><Sizes><Wnd5><Rect><Top>-2</Top><Left>-2</Left><Bottom>765</Bottom><Right>232</Right><x>-2</x><y>-2</y><xscreen>234</xscreen><yscreen>218</yscreen><sizeHorzCX>140372</sizeHorzCX><sizeHorzCY>207619</sizeHorzCY><sizeVertCX>140372</sizeVertCX><sizeVertCY>730476</sizeVertCY></Rect></Wnd5></Sizes></Row0></Left><Right><Row0><Sizes><Wnd6><Rect><Top>-2</Top><Left>-2</Left><Bottom>765</Bottom><Right>354</Right><x>-2</x><y>-2</y><xscreen>234</xscreen><yscreen>218</yscreen><sizeHorzCX>140372</sizeHorzCX><sizeHorzCY>207619</sizeHorzCY><sizeVertCX>213557</sizeVertCX><sizeVertCY>730476</sizeVertCY></Rect></Wnd6></Sizes></Row0><Row1><Sizes><Wnd7><Rect><Top>-2</Top><Left>352</Left><Bottom>765</Bottom><Right>586</Right><x>352</x><y>-2</y><xscreen>234</xscreen><yscreen>218</yscreen><sizeHorzCX>140372</sizeHorzCX><sizeHorzCY>207619</sizeHorzCY><sizeVertCX>140372</sizeVertCX><sizeVertCY>730476</sizeVertCY></Rect></Wnd7></Sizes></Row1></Right><Bottom><Row0><Sizes><Wnd2><Rect><Top>-2</Top><Left>-2</Left><Bottom>216</Bottom><Right>1669</Right><x>-2</x><y>-2</y><xscreen>1671</xscreen><yscreen>218</yscreen><sizeHorzCX>1002400</sizeHorzCX><sizeHorzCY>207619</sizeHorzCY><sizeVertCX>140372</sizeVertCX><sizeVertCY>207619</sizeVertCY></Rect></Wnd2></Sizes></Row0></Bottom><Float><Sizes/></Float></Positions>
+  </Desktop>
+</Project>
+
+
