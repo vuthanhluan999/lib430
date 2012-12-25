@@ -40,6 +40,12 @@
 
 #include "msp430f2012.h"
 
+#define Version 0x0110
+#define VersionLocation 0xFFFF-RESET_VECTOR-3
+
+__root static const int x@VersionLocation = Version;
+
+
 void delay(volatile unsigned int counter)
    {
      do;
@@ -50,10 +56,10 @@ unsigned long LEDRun(unsigned int duration,unsigned int brightness)
    {
       do
       {
-        P1OUT |= 0xE4;
+        P1OUT |= BIT5+BIT6+BIT7;
         delay(brightness);
 
-        P1OUT &= ~0xE4;
+        P1OUT &= ~BIT5+BIT6+BIT7;
         delay(255-brightness);
       } while(duration--);
 
