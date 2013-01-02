@@ -1,8 +1,6 @@
 /**********************************************************************************************\
-* Filename:    Main.c                                                                          *
-* Description: PC Starter                                                                      *
-* This has been programmed to start a remote Backup PC automatically at a certain time every   *
-* week. The BIOS wake up wasn't doing a good job. The time and date must be set manually.      *
+* Filename:     Main.c                                                                         *
+* Description:  PC Starter for HTESYNCSRV                                                      *
 * Push S2 to change state and S1 to set. S2 toggles thru the different modes which are         *
 * indicated by the LEDs.                                                                       *
 * LED: 7 6 5 4 3 2 1 0                                                                         *
@@ -27,15 +25,16 @@
 *    |                                                                                         *
 *    _                                                                                         *
 *                                                                                              *
+*                                                                                              *
 * 32.768kHz Quartz Crystal on XIN/XOUT                                                         *
 *                                                                                              *
 * Device:   MSP430F2012                                                                        *
-* Version:  1.0.2                                                                              *
-* Compiler: IAR Embedded Workbench IDE V.5.40 (TI: V6.10)                                      *
+* Version:  1.0.3                                                                              *
+* Compiler: IAR Embedded Workbench IDE V.5.51 (TI: V6.40)                                      *
 *                                                                                              *
 * COPYRIGHT:                                                                                   *
 * Author:   Gerald Gradl                                                                       *
-* Date:     01/2012                                                                            *
+* Date:     01/2013                                                                            *
 *                                                                                              *
 * This program is free software: you can redistribute it and/or modify it under the terms of   *
 * the GNU General Public License as published by the Free Software Foundation, either          *
@@ -50,6 +49,8 @@
 \**********************************************************************************************/
 
 #include  "msp430x20x2.h"
+
+//#define ZEIT 1000 		// Timer delay timeout count, 1000 msec
 
 // Multiplexed LEDs
 #define LED_MASK 0x0F // 7 LEDs, 4 IO lines, n = 4, number of LEDS = n x (n-1)
@@ -123,7 +124,7 @@ void LEDOff();
 #define ON 1
 #define OFF 0
 
-#define Version 0x0101
+#define Version 0x0103
 #define VersionLocation 0xFFFF-RESET_VECTOR-3
 
 __root static const int x@VersionLocation = Version;
@@ -142,6 +143,15 @@ void main(void)
   P1IES = BIT5 + BIT6;          // set high to low transition for P1.5&6 interrupt
   P1IE  = BIT5 + BIT6;          // enable P1.5&6 interrupt
 
+  //P1DIR = BIT0 + BIT6;        // mov BIT1 and BIT6 to P1DIR for output
+  //P1OUT &= ~BIT0 + ~BIT6;
+  //P2SEL &= ~BIT6 + ~BIT7;     // bic SEL of P2.6
+  //P2OUT = BIT6 + BIT7;        // mov BIT6 P2OUT = pullup
+  //P2REN = BIT6 + BIT7;        // mov BIT6 P2REN = pullup/down enable
+  //P2IFG = 0;                  // Clear Interrupt Flags of P2.x
+  //P2IES = BIT6 + BIT7;        // set high to low transition for P2.6 interrupt
+  //P2IE  = BIT6 + BIT7;        // enable P2.6 interrupt
+
   WDTCTL = WDTPW + WDTTMSEL + WDTCNTCL + WDTSSEL; // watchdog counter mode, ACLK, /32768
   IFG1 &= ~WDTIFG;              // Clear WDT interrupt flag
   IE1 |= WDTIE;                 // WDT interrupt enable
@@ -151,8 +161,8 @@ void main(void)
     minuteO = 0;
     minuteT = 0;
     second = 0;
-    alarmday = 7;
-    alarmhour = 22;
+    alarmday = 3;
+    alarmhour = 1;
     viewpointer = 1;
     LED = 0;
     state = ACTIVE;
@@ -163,6 +173,9 @@ void main(void)
 /******************************************************************************/
   while(1) // endless loop
   {
+    //__bis_SR_register(LPM3_bits+GIE);
+    // P1OUT ^= BIT0;  // xor BIT0
+
      __enable_interrupt();
 
      if (alarm == ALARM_ON)
@@ -176,7 +189,7 @@ void main(void)
      }
      update_view(state);
 
-     // LED On or Off acc. it's state in "view". The viewpointer is going thru from BIT0 to BIT5
+     // LED On or Off acc. it's state in "view". The viewpointer is going from BIT0 to BIT5
      if(view & viewpointer)     // Is the Bit where viewpointer is pointing at set?
      {                          // Yes? Then switch on corresponding LED.
       LEDOn();
@@ -207,13 +220,13 @@ void main(void)
 /******************************************************************************/
 void configureClocks()
 {
-// Set system DCO to 1MHz
+// Set system DCO to 8MHz
 BCSCTL1 = CALBC1_8MHZ;
 DCOCTL = CALDCO_8MHZ;
 // LFXT1 = VLO
 // BCSCTL3 |= LFXT1S_2;                      // Select VLO as source for ACLK
 BCSCTL3 |= LFXT1S_0;                      // 32kHz Crystal as source for ACLK
-//BCSCTL3 |= XCAP_0;                        // Trim 32.768kHz with internal Caps
+//BCSCTL3 |= XCAP_0;
 //P1DIR |= BIT0;                            // Debug: ACLK @ P1.0
 //P1SEL |= BIT0;                            // Debug: ACLK @ P1.0
 IFG1 &= ~OFIFG;                           // Clear OSCFault flag
@@ -298,9 +311,11 @@ void update_view(char state)
   {
     case OFF:
       view = 0;
+      alarm = 0;
       break;
     case ACTIVE:
       view = state;
+      alarm = 1;
       break;
     case SET_DAY:
       view = state+(day<<3);
