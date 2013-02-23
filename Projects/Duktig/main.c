@@ -18,7 +18,7 @@
 *                                   -----------------                                          *
 *                                                                                              *
 * Device:   MSP430F2012                                                                        *
-* Version:  1.0.0                                                                              *
+* Version:  1.0.2                                                                              *
 * Compiler: IAR Embedded Workbench IDE V.5.51.3                                                *
 *                                                                                              *
 * COPYRIGHT:                                                                                   *
@@ -43,10 +43,14 @@
 #define LED2 BIT5
 #define KEY1 BIT7
 #define KEY2 BIT6
+#define ON   1
+#define OFF  0
 
+unsigned char LEDstate1;
+unsigned char LEDstate2;
 unsigned int time;
 
-#define Version 0x0100
+#define Version 0x0102
 #define VersionLocation 0x0FFFF-RESET_VECTOR-3
 __root static const int x@VersionLocation = Version;
 
@@ -76,6 +80,37 @@ int main(void) {
         while(1)
         {
         __low_power_mode_4();
+        __no_operation();
+            while(1)
+            {
+              if(LEDstate1 == ON)
+              {
+                P1OUT |= LED1;
+              }
+              if(LEDstate2 == ON)
+              {
+                P1OUT |= LED2;
+              }
+              for(unsigned int j=0;j<0x250;j++){}
+              if(LEDstate1 == ON)
+              {
+                P1OUT &= ~LED1;
+              }
+              if(LEDstate2 == ON)
+              {
+                P1OUT &= ~LED2;
+              }
+              for(unsigned int j=0;j<0x500;j++){}
+              if((time>=100) || ((LEDstate1 == OFF) && (LEDstate2 == OFF)))                 // Actual seconds is roughly time x 3
+              {
+              time=0;
+              WDTCTL = WDTPW + WDTHOLD;
+              LEDstate1 = OFF;
+              LEDstate2 = OFF;
+              P1OUT &= ~(LED1+LED2);
+              break;
+              }
+            }
         }
 }
 
@@ -88,33 +123,27 @@ __interrupt void ISR_WDT(void)
 {
         IFG1 &= ~WDTIFG;              // Clear WDT interrupt flag
         time++;
-        if(time>=200)                 // Actual seconds is roughly time x 3
-        {
-        time=0;
-        _BIS_SR_IRQ(OSCOFF);
-        WDTCTL = WDTPW + WDTHOLD;
-        P1OUT &= ~(LED1+LED2);
-        }
-
 }
 
 #pragma vector=PORT1_VECTOR
 __interrupt void Port_1(void)
 {
+        
+        P1OUT &= ~(LED1 + LED2);
         for(unsigned int i=0;i<2;i++){for(unsigned int j=0;j<0xFFFF;j++){}}  //Debounce
-        if(P1IFG == KEY1)
+        if(P1IFG & KEY1)
         {
-        P1OUT ^= LED1;
+        LEDstate1 ^= 1;
         }
-        else
+        if(P1IFG & KEY2)
         {
-        P1OUT ^= LED2;
+        LEDstate2 ^= 1;
         }
         P1IFG = 0;
-
-        if(P1OUT == LED1 | LED2)
+        time=0;
+        if(1 == LEDstate1 | LEDstate2)
         {
         WDTCTL = WDTPW + WDTTMSEL + WDTCNTCL + WDTSSEL; // watchdog counter mode, ACLK, /32768
-        _BIC_SR_IRQ(OSCOFF);
+        _BIC_SR_IRQ(OSCOFF+CPUOFF+SCG1+SCG0);
         }
 }
