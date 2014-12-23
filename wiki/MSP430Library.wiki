@@ -27,6 +27,5 @@ Im also working on a booster pack for the Lauchpad containing most of the sensor
                                    -----------------
 }}}
 
-http://www.nueberk.de/pix/LaunchPad400.png
 
 <g:plusone size="medium"></g:plusone>
